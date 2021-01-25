@@ -1,4 +1,4 @@
-pragma solidity ^0.6.6;
+pragma solidity =0.6.6;
 
 import './libraries/SafeMath.sol';
 import './interfaces/IERC20.sol';
@@ -101,7 +101,8 @@ contract CzzV1Router is Ownable {
     );
     event BurnToken(
         address  indexed to,
-        uint256  amount
+        uint256  amount,
+        uint256  ntype
     );
     event SwapToken(
         address indexed to,
@@ -181,7 +182,7 @@ contract CzzV1Router is Ownable {
         }
     }
     
-    function burn(uint256 _amountOut) payable public
+    function burn(uint256 _amountOut, uint256 ntype) payable public
     returns (uint[] memory amounts)
     {
         // require(msg.value > 0);
@@ -191,7 +192,7 @@ contract CzzV1Router is Ownable {
         // emit SwapToken(msg.sender, msg.value,czzOut,"eth to czz");
         
         ICzzSwap(czzToken).burn(msg.sender, _amountOut);
-        // emit BurnToken(address(this), czzOut);
+        emit BurnToken(msg.sender, _amountOut, ntype);
       
     }
     
