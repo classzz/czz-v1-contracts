@@ -97,7 +97,8 @@ contract CzzV1Router is Ownable {
     );
     event MintToken(
         address indexed to,
-        uint256 amount
+        uint256 amount,
+        uint256 mid
     );
     event BurnToken(
         address  indexed to,
@@ -163,10 +164,10 @@ contract CzzV1Router is Ownable {
             item.signatureCount++;
             if(item.signatureCount >= MIN_SIGNATURES){
                 ICzzSwap(czzToken).mint(_to, _amount);    // mint to contract address    
-                emit MintToken(_to, _amount);
+                emit MintToken(_to, _amount, mid);
                 // uint256 eOut = _amount;
                 // emit IERC20(address(this), _amount, eOut, "eczz to eth");
-                emit TransferToken(_to, _amount);
+                // emit TransferToken(_to, _amount);
                 // deleteItems(mid);
             }
         } else {
