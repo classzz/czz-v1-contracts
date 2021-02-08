@@ -1,7 +1,8 @@
 pragma solidity =0.6.6;
 
-import './libraries/SafeMath.sol';
-import './interfaces/IERC20.sol';
+import './SafeMath.sol';
+import './IERC20.sol';
+import 'browser/github/Uniswap/uniswap-v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
@@ -69,11 +70,13 @@ contract Ownable is Context {
 interface ICzzSwap is IERC20 {
     function mint(address _to, uint256 _amount) external;
     function burn(address _account, uint256 _amount) external;
+    function transferOwnership(address newOwner) external;
 }
 
 contract CzzV1Router is Ownable {
     using SafeMath for uint;
-    
+    address internal constant CONTRACT_ADDRESS = 0xDcB02D4beb6c80eA3F5e12fF2ab61CDeF63f1d5C;  // uniswap router_v2
+    IUniswapV2Router02 internal uniswap;
     
     address public czzToken;
     
@@ -88,7 +91,7 @@ contract CzzV1Router is Ownable {
         uint8 signatureCount;
         mapping (address => uint8) signatures;
     }
-    
+   
     event MintItemCreated(
         address indexed from,
         address to,
@@ -97,13 +100,13 @@ contract CzzV1Router is Ownable {
     );
     event MintToken(
         address indexed to,
-        uint256 amount,
-        uint256 mid
+        uint256 amount
     );
     event BurnToken(
         address  indexed to,
         uint256  amount,
-        uint256  ntype
+        uint256  ntype,
+        string   toToken
     );
     event SwapToken(
         address indexed to,
@@ -124,7 +127,9 @@ contract CzzV1Router is Ownable {
 
     constructor(address _token) public {
         czzToken = _token;
+        uniswap = IUniswapV2Router02(0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16);
     }
+    
     receive() external payable {}
     
     function addManager(address manager) public onlyOwner{
@@ -149,52 +154,153 @@ contract CzzV1Router is Ownable {
         // delete mintItems[mid];
     }
     
-    function mint(address _to, uint256 _amount, uint256 mid) payable public isManager {
+    function swap_test(
+        uint amountIn,
+        uint amountOutMin,
+        address from
+        ) payable public {
+        address[] memory path = new address[](3);
+        address uniswap_token = 0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16;
+        path[0] = from;
+        path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
+        path[2] = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        //uniswap.swapExactTokensForTokens(amountIn,amountOutMin,path,to,1000000000000000000000000);
+        bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
+        (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(id, amountIn, amountOutMin,path,msg.sender,10000000000000000000000000));
+        require(
+            success ,'uniswap_token::uniswap_token: uniswap_token failed'
+        );
+    }
+    
+    function _swap(
+        uint amountIn,
+        uint amountOutMin,
+        address[] memory path,
+        address to
+        ) payable public {
+       
+        address uniswap_token = 0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16;
+       // path[0] = from;
+       // path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
+       // path[2] = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        //uniswap.swapExactTokensForTokens(amountIn,amountOutMin,path,to,1000000000000000000000000);
+        bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
+        (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(id, amountIn, amountOutMin, path, to, 10000000000000000000000000));
+        require(
+            success ,'uniswap_token::uniswap_token: uniswap_token failed'
+        );
+    }
+    
+    function swap_burn_get_amount(uint amountIn, address from) public view onlyOwner returns (uint[] memory amounts){
+        address[] memory path = new address[](3);
+        path[0] = from;
+        path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
+        path[2] = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        return uniswap.getAmountsOut(amountIn,path);
+    }
+    
+    function swap_mint_get_amount(uint amountIn, address to) public view onlyOwner returns (uint[] memory amounts){
+        address[] memory path = new address[](3);
+        path[0] = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
+        path[2] = to;
+        return uniswap.getAmountsOut(amountIn,path);
+    }
+    
+    function swapAndmint(address _to, uint _amountIn, uint256 mid, address toToken) payable public isManager {
         require(address(0) != _to);
-        require(_amount > 0);
+        require(_amountIn > 0);
         // require(address(this).balance >= _amount);
      
-        MintItem storage item = mintItems[mid];
-        if (address(0) != item.to && item.amount > 0) {
+        //MintItem storage item = mintItems[mid];
+        //require(item.signatures[msg.sender]==0, "repeat sign");
+        //require(item.to == _to, "mismatch to address");
+        //require(item.amount == _amountIn, "mismatch amount");
+
+       // item.signatures[msg.sender] = 1;
+       // item.signatureCount++;
+       // if(item.signatureCount >= MIN_SIGNATURES)
+        //{
+            address czzToken1 = 0x1E0E3A59baC187707252DE00b8f842E1DCb61de3;
+            address[] memory path = new address[](3);
+            path[0] = czzToken1;
+            path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
+            path[2] = toToken;
+            ICzzSwap(czzToken1).mint(msg.sender, _amountIn);    // mint to contract address   
+            uint[] memory amounts = swap_mint_get_amount(_amountIn, toToken);
+            _swap(_amountIn, 0, path, _to);
+            emit MintToken(_to, _amountIn);
+            // uint256 eOut = _amount;
+            // emit IERC20(address(this), _amount, eOut, "eczz to eth");
+            emit TransferToken(_to, _amountIn);
+            // deleteItems(mid);
+       // }
+        /*
+        if (address(0) != item.to && item.amount > 0) 
+        {
             require(item.signatures[msg.sender]==0, "repeat sign");
             require(item.to == _to, "mismatch to address");
-            require(item.amount == _amount, "mismatch amount");
+            require(item.amount == _amountIn, "mismatch amount");
 
             item.signatures[msg.sender] = 1;
             item.signatureCount++;
             if(item.signatureCount >= MIN_SIGNATURES){
-                ICzzSwap(czzToken).mint(_to, _amount);    // mint to contract address    
-                emit MintToken(_to, _amount, mid);
+                address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+                address[] memory path = new address[](3);
+                path[0] = czzToken1;
+                path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
+                path[2] = toToken;
+                ICzzSwap(czzToken1).mint(msg.sender, _amountIn);    // mint to contract address   
+                uint[] memory amounts = swap_mint_get_amount(_amountIn, toToken);
+                _swap(_amountIn, 0, path, _to);
+                emit MintToken(_to, _amountIn);
                 // uint256 eOut = _amount;
                 // emit IERC20(address(this), _amount, eOut, "eczz to eth");
-                // emit TransferToken(_to, _amount);
+                emit TransferToken(_to, _amountIn);
                 // deleteItems(mid);
             }
         } else {
             // MintItem item;
             item.to = _to;
-            item.amount = _amount;
+            item.amount = _amountIn;
             item.signatureCount = 0;
             item.signatures[msg.sender] = 1;
             item.signatureCount++;
             mintItems[mid] = item;
             pendingItems.push(mid);
-            emit MintItemCreated(msg.sender, _to, _amount, mid);
+            emit MintItemCreated(msg.sender, _to, _amountIn, mid);
         }
+        */
     }
     
-    function burn(uint256 _amountOut, uint256 ntype) payable public
-    returns (uint[] memory amounts)
+    function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
     {
         // require(msg.value > 0);
-        
-        // uint256 czzOut = _amountOut
-        // uint256 czzOut = IRouter(baseSwap).swapSTD2Token{value: msg.value}(msg.value,czzToken,_minAmountOut);
-        // emit SwapToken(msg.sender, msg.value,czzOut,"eth to czz");
-        
-        ICzzSwap(czzToken).burn(msg.sender, _amountOut);
-        emit BurnToken(msg.sender, _amountOut, ntype);
+        address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        address[] memory path = new address[](3);
+        path[0] = fromToken;
+        path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
+        path[2] = czzToken1;
+        uint[] memory amounts = swap_burn_get_amount(_amountIn, fromToken);
+        _swap(_amountIn, _amountOutMin, path, msg.sender);
+        if(ntype != 1){
+            ICzzSwap(czzToken1).burn(msg.sender, amounts[amounts.length - 1]);
+            emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
+        }
       
     }
     
+    function updateTokenOwner(address newOwner) public onlyOwner {
+        address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        ICzzSwap(czzToken1).transferOwnership(newOwner);
+        
+    }
+    
+    function burn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
+    {
+        uint[] memory amounts;
+        address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        ICzzSwap(czzToken1).burn(msg.sender, amounts[amounts.length - 1]);
+        emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
+    }
 }

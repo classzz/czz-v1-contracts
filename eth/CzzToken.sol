@@ -1,22 +1,20 @@
 pragma solidity ^0.6.6;
 
 
-import './interfaces/IERC20.sol';
-import './libraries/SafeMath.sol';
-import './libraries/Address.sol';
+import './IERC20.sol';
+import './SafeMath.sol';
+import './Address.sol';
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
         return msg.sender;
     }
-asdf
+
     function _msgData() internal view virtual returns (bytes memory) {
         this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
         return msg.data;
     }
 }
-
-
 contract Ownable is Context {
     address private _owner;
 
@@ -69,8 +67,8 @@ contract ERC20 is Context, IERC20 {
     constructor (string memory name, string memory symbol) public {
         _name = name;
         _symbol = symbol;
-        _decimals = 8;
-        _totalSupply = 100000000*10**8;
+        _decimals = 18;
+        _totalSupply = 100000000*10**18;
         _balances[msg.sender] = _totalSupply;
     }
 
@@ -166,7 +164,10 @@ contract ERC20 is Context, IERC20 {
      */
     function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
         _transfer(sender, recipient, amount);
-        _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
+        uint256 _amount = _allowances[sender][_msgSender()] - amount;
+        require(_amount >= 0, "ERC20: transfer amount exceeds allowance");
+        _allowances[sender][_msgSender()] = _amount;
+        _approve(sender, _msgSender(), _amount);
         return true;
     }
 
@@ -225,8 +226,9 @@ contract ERC20 is Context, IERC20 {
         require(recipient != address(0), "ERC20: transfer to the zero address");
 
         _beforeTokenTransfer(sender, recipient, amount);
-
-        _balances[sender] = _balances[sender].sub(amount, "ERC20: transfer amount exceeds balance");
+        uint256 _amount = _balances[sender] - amount;
+        require(_amount >= 0, "ERC20: transfer amount exceeds balance");
+        _balances[sender] = _amount;
         _balances[recipient] = _balances[recipient].add(amount);
         emit Transfer(sender, recipient, amount);
     }
@@ -326,7 +328,7 @@ contract CzzToken is ERC20, Ownable {
     function mint(address _to, uint256 _amount) public onlyOwner {
         _mint(_to, _amount);
     }
-    function burn(address account, uint256 amount) public {
+    function burn(address account, uint256 amount) public onlyOwner {
         _burn(account, amount);
     }
 
