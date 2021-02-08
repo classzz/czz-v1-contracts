@@ -75,7 +75,8 @@ interface ICzzSwap is IERC20 {
 
 contract CzzV1Router is Ownable {
     using SafeMath for uint;
-    address internal constant CONTRACT_ADDRESS = 0xDcB02D4beb6c80eA3F5e12fF2ab61CDeF63f1d5C;  // uniswap router_v2
+    address internal constant CONTRACT_ADDRESS = 0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16;  // uniswap router_v2
+    address internal constant WETH_CONTRACT_ADDRESS = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;  // WETHADDRESS
     IUniswapV2Router02 internal uniswap;
     
     address public czzToken;
@@ -127,7 +128,7 @@ contract CzzV1Router is Ownable {
 
     constructor(address _token) public {
         czzToken = _token;
-        uniswap = IUniswapV2Router02(0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16);
+        uniswap = IUniswapV2Router02(CONTRACT_ADDRESS);
     }
     
     receive() external payable {}
@@ -160,10 +161,10 @@ contract CzzV1Router is Ownable {
         address from
         ) payable public {
         address[] memory path = new address[](3);
-        address uniswap_token = 0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16;
+        address uniswap_token = CONTRACT_ADDRESS;
         path[0] = from;
-        path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
-        path[2] = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        path[1] = WETH_CONTRACT_ADDRESS;
+        path[2] = czzToken;
         //uniswap.swapExactTokensForTokens(amountIn,amountOutMin,path,to,1000000000000000000000000);
         bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
         (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(id, amountIn, amountOutMin,path,msg.sender,10000000000000000000000000));
@@ -179,7 +180,7 @@ contract CzzV1Router is Ownable {
         address to
         ) payable public {
        
-        address uniswap_token = 0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16;
+        address uniswap_token = CONTRACT_ADDRESS;
        // path[0] = from;
        // path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
        // path[2] = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
@@ -194,15 +195,15 @@ contract CzzV1Router is Ownable {
     function swap_burn_get_amount(uint amountIn, address from) public view onlyOwner returns (uint[] memory amounts){
         address[] memory path = new address[](3);
         path[0] = from;
-        path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
-        path[2] = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        path[1] = WETH_CONTRACT_ADDRESS;
+        path[2] = czzToken;
         return uniswap.getAmountsOut(amountIn,path);
     }
     
     function swap_mint_get_amount(uint amountIn, address to) public view onlyOwner returns (uint[] memory amounts){
         address[] memory path = new address[](3);
-        path[0] = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
-        path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
+        path[0] = czzToken;
+        path[1] = WETH_CONTRACT_ADDRESS;
         path[2] = to;
         return uniswap.getAmountsOut(amountIn,path);
     }
@@ -221,12 +222,12 @@ contract CzzV1Router is Ownable {
        // item.signatureCount++;
        // if(item.signatureCount >= MIN_SIGNATURES)
         //{
-            address czzToken1 = 0x1E0E3A59baC187707252DE00b8f842E1DCb61de3;
+            //address czzToken1 = 0x1E0E3A59baC187707252DE00b8f842E1DCb61de3;
             address[] memory path = new address[](3);
-            path[0] = czzToken1;
-            path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
+            path[0] = czzToken;
+            path[1] = WETH_CONTRACT_ADDRESS;
             path[2] = toToken;
-            ICzzSwap(czzToken1).mint(msg.sender, _amountIn);    // mint to contract address   
+            ICzzSwap(czzToken).mint(msg.sender, _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, toToken);
             _swap(_amountIn, 0, path, _to);
             emit MintToken(_to, _amountIn);
@@ -276,22 +277,22 @@ contract CzzV1Router is Ownable {
     function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
     {
         // require(msg.value > 0);
-        address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
         address[] memory path = new address[](3);
         path[0] = fromToken;
-        path[1] = 0x6aE86268312A815831A5cfe35187d1f3D2B6dE76;
-        path[2] = czzToken1;
+        path[1] = WETH_CONTRACT_ADDRESS;
+        path[2] = czzToken;
         uint[] memory amounts = swap_burn_get_amount(_amountIn, fromToken);
         _swap(_amountIn, _amountOutMin, path, msg.sender);
         if(ntype != 1){
-            ICzzSwap(czzToken1).burn(msg.sender, amounts[amounts.length - 1]);
+            ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
         }
       
     }
     
     function updateTokenOwner(address newOwner) public onlyOwner {
-        address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        address czzToken1 = czzToken;
         ICzzSwap(czzToken1).transferOwnership(newOwner);
         
     }
@@ -299,7 +300,7 @@ contract CzzV1Router is Ownable {
     function burn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
     {
         uint[] memory amounts;
-        address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        address czzToken1 = czzToken;
         ICzzSwap(czzToken1).burn(msg.sender, amounts[amounts.length - 1]);
         emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
     }
