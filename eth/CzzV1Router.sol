@@ -192,7 +192,7 @@ contract CzzV1Router is Ownable {
         );
     }
     
-    function swap_burn_get_amount(uint amountIn, address from) public view onlyOwner returns (uint[] memory amounts){
+    function swap_burn_get_amount(uint amountIn, address from) public view returns (uint[] memory amounts){
         address[] memory path = new address[](3);
         path[0] = from;
         path[1] = WETH_CONTRACT_ADDRESS;
@@ -200,7 +200,7 @@ contract CzzV1Router is Ownable {
         return uniswap.getAmountsOut(amountIn,path);
     }
     
-    function swap_mint_get_amount(uint amountIn, address to) public view onlyOwner returns (uint[] memory amounts){
+    function swap_mint_get_amount(uint amountIn, address to) public view returns (uint[] memory amounts){
         address[] memory path = new address[](3);
         path[0] = czzToken;
         path[1] = WETH_CONTRACT_ADDRESS;
