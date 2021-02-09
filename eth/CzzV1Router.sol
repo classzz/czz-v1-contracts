@@ -2,7 +2,7 @@ pragma solidity =0.6.6;
 
 import './SafeMath.sol';
 import './IERC20.sol';
-import 'browser/github/Uniswap/uniswap-v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
+import './IUniswapV2Router02.sol';
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
