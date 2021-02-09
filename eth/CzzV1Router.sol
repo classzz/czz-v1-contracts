@@ -143,7 +143,7 @@ contract CzzV1Router is Ownable {
         managers[manager] = 0;
     }
     
-    function deleteItems(uint256 mid) public isManager {
+    function deleteItems(uint256 mid) internal isManager {
         uint8 replace = 0;
         for(uint i = 0; i< pendingItems.length; i++){
             if(1==replace){
@@ -157,7 +157,7 @@ contract CzzV1Router is Ownable {
         // delete mintItems[mid];
     }
     
-    function getItem(uint256 mid) public isManager returns (uint8 ret){    //0 ok  1 error
+    function getItem(uint256 mid) internal isManager returns (uint8 ret){    //0 ok  1 error
         uint8 replace = 0;
         for(uint i = 0; i< pendingItems.length; i++){
             if(mid == pendingItems[i]){
@@ -190,7 +190,7 @@ contract CzzV1Router is Ownable {
         uint amountOutMin,
         address[] memory path,
         address to
-        ) payable public {
+        ) payable internal {
       
         address uniswap_token = CONTRACT_ADDRESS;
         
@@ -275,11 +275,5 @@ contract CzzV1Router is Ownable {
     function setMinSignatures(uint8 value) public onlyOwner {
         minSignatures = value;
     }
-    
-    function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public
-    {
-        address czzToken1 = czzToken;
-        ICzzSwap(czzToken1).burn(msg.sender, _amountIn);
-        emit BurnToken(msg.sender, _amountIn, ntype, toToken);
-    }
+
 }
