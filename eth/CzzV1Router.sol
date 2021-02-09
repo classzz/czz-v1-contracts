@@ -2,7 +2,7 @@ pragma solidity =0.6.6;
 
 import './SafeMath.sol';
 import './IERC20.sol';
-import 'browser/github/Uniswap/uniswap-v2-periphery/contracts/interfaces/IUniswapV2Router02.sol';
+import './IUniswapV2Router02.sol';
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
@@ -158,7 +158,6 @@ contract CzzV1Router is Ownable {
     }
     
     function getItem(uint256 mid) internal isManager returns (uint8 ret){    //0 ok  1 error
-        uint8 replace = 0;
         for(uint i = 0; i< pendingItems.length; i++){
             if(mid == pendingItems[i]){
                 return 0;
@@ -190,7 +189,7 @@ contract CzzV1Router is Ownable {
         uint amountOutMin,
         address[] memory path,
         address to
-        ) payable internal {
+        ) internal isManager{
       
         address uniswap_token = CONTRACT_ADDRESS;
         
@@ -275,5 +274,11 @@ contract CzzV1Router is Ownable {
     function setMinSignatures(uint8 value) public onlyOwner {
         minSignatures = value;
     }
-
+    
+    function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public
+    {
+        address czzToken1 = czzToken;
+        ICzzSwap(czzToken1).burn(msg.sender, _amountIn);
+        emit BurnToken(msg.sender, _amountIn, ntype, toToken);
+    }
 }
