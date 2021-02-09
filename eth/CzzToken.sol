@@ -323,12 +323,26 @@ contract ERC20 is Context, IERC20 {
 }
 
 contract CzzToken is ERC20, Ownable {
-
+    mapping (address => uint8) private managers;
     constructor (string memory name, string memory symbol) ERC20(name,symbol) public {} 
-    function mint(address _to, uint256 _amount) public onlyOwner {
+    modifier isManager {
+        require(
+            msg.sender == owner() || managers[msg.sender] == 1);
+        _;
+    }
+
+    function addManager(address manager) public onlyOwner{
+        managers[manager] = 1;
+    }
+    
+    function removeManager(address manager) public onlyOwner{
+        managers[manager] = 0;
+    }
+    
+    function mint(address _to, uint256 _amount) public isManager {
         _mint(_to, _amount);
     }
-    function burn(address account, uint256 amount) public onlyOwner {
+    function burn(address account, uint256 amount) public isManager {
         _burn(account, amount);
     }
 
