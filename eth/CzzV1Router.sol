@@ -281,4 +281,11 @@ contract CzzV1Router is Ownable {
         ICzzSwap(czzToken1).burn(msg.sender, _amountIn);
         emit BurnToken(msg.sender, _amountIn, ntype, toToken);
     }
+
+     function mint( address fromToken, uint _amountIn)  payable public isManager 
+    {
+        address czzToken1 = czzToken;
+        ICzzSwap(czzToken1).mint(fromToken, _amountIn);
+        emit MintToken(fromToken, _amountIn);
+    }
 }
