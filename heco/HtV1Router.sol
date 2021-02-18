@@ -170,7 +170,7 @@ contract HtV1Router is Ownable {
         // delete mintItems[mid];
     }
     
-    function getItem(uint256 mid) internal isManager returns (uint8 ret){    //0 ok  1 error
+    function getItem(uint256 mid) internal returns (uint8 ret){    //0 ok  1 error
         for(uint i = 0; i< pendingItems.length; i++){
             if(mid == pendingItems[i]){
                 return 0;
@@ -213,12 +213,12 @@ contract HtV1Router is Ownable {
         );
     }
     
-    function swap_burn_get_amount(uint amountOut, address from) public view returns (uint[] memory amounts){
+    function swap_burn_get_amount(uint amountIn, address from) public view returns (uint[] memory amounts){
         address[] memory path = new address[](3);
         path[0] = from;
         path[1] = WETH_CONTRACT_ADDRESS;
         path[2] = czzToken;
-        return uniswap.getAmountsOut(amountOut,path);
+        return uniswap.getAmountsOut(amountIn,path);
     }
     
     function swap_mint_get_amount(uint amountOut, address to) public view returns (uint[] memory amounts){
@@ -266,7 +266,7 @@ contract HtV1Router is Ownable {
         mintItems[mid] = item;
     }
     
-    function swapAndBurn( uint _amountout, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
+    function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
     {
         // require(msg.value > 0);
         //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
@@ -274,8 +274,8 @@ contract HtV1Router is Ownable {
         path[0] = fromToken;
         path[1] = WETH_CONTRACT_ADDRESS;
         path[2] = czzToken;
-        uint[] memory amounts = swap_burn_get_amount(_amountout, fromToken);
-        _swap(_amountout, _amountOutMin, path, msg.sender);
+        uint[] memory amounts = swap_burn_get_amount(_amountIn, fromToken);
+        _swap(_amountIn, _amountOutMin, path, msg.sender);
         if(ntype != 1){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
