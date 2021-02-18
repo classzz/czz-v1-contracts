@@ -197,24 +197,6 @@ contract HtV1Router is Ownable {
         );
     }
     
-     function addLiquidity(
-        address tokenA,
-        address tokenB,
-        uint amountADesired,
-        uint amountBDesired,
-        uint amountAMin,
-        uint amountBMin,
-        address to
-    ) public isManager{
-        address uniswap_token = CONTRACT_ADDRESS;
-        bytes4 id = bytes4(keccak256(bytes('addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)')));
-        (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(id,tokenA,tokenB,amountADesired,amountBDesired,amountAMin,amountBMin,to,1000000000000000000000000));
-        require(
-            success ,'addLiquidity::addLiquidity: addLiquidity failed'
-        );
-        
-    }
-    
     function _swap(
         uint amountIn,
         uint amountOutMin,
@@ -228,18 +210,6 @@ contract HtV1Router is Ownable {
         (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin,path,to,10000000000000000000000000));
         require(
             success ,'uniswap_token::uniswap_token: uniswap_token failed'
-        );
-    }
-    function _swap1(
-        uint amountIn,
-        uint amountOutMin,
-        address[] memory path,
-        address to
-        ) internal {
-        
-        uint[] memory amounts = uniswap.swapExactTokensForTokens(amountIn,amountOutMin,path,to,10000000000000000000000000);
-        require(
-            amounts.length >= 2 ,'uniswap_token::uniswap_token: uniswap_token failed'
         );
     }
     
@@ -313,22 +283,6 @@ contract HtV1Router is Ownable {
       
     }
     
-    function swapAndBurn1( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
-    {
-        // require(msg.value > 0);
-        //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
-        address[] memory path = new address[](3);
-        path[0] = fromToken;
-        path[1] = WETH_CONTRACT_ADDRESS;
-        path[2] = czzToken;
-        uint[] memory amounts = swap_burn_get_amount(_amountIn, fromToken);
-        _swap1(_amountIn, _amountOutMin, path, msg.sender);
-        if(ntype != 1){
-            ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
-            emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
-        }
-      
-    }
 
     function setMinSignatures(uint8 value) public onlyOwner {
         minSignatures = value;
