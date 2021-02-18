@@ -74,7 +74,7 @@ interface ICzzSwap is IERC20 {
 }
 
 interface IUniswapV2Router02 {
-    function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
+    function getAmountsOut(uint256 amountIn, address[] calldata path) external view returns (uint256[] memory amounts);
     function swapExactTokensForTokens(
         uint amountIn,
         uint amountOutMin,
@@ -87,9 +87,9 @@ interface IUniswapV2Router02 {
 contract HtV1Router is Ownable {
     using SafeMath for uint;
     //address internal constant CONTRACT_ADDRESS = 0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16;  // uniswap router_v2  eth test
-    address internal constant CONTRACT_ADDRESS = 0x53b77a80E8Be299F22faa9405c39fD6Cfc451db8;  // uniswap router_v2  ht
+    address internal constant CONTRACT_ADDRESS = 0xa0Bf1A926b5fA61C7713D488dcc0fE4f086E2fF9;  // uniswap router_v2  ht
     
-    address internal constant WETH_CONTRACT_ADDRESS = 0xef4AAC2BA097C17fa54072626a923143E80bA695;  // WETHADDRESS
+    address internal constant WETH_CONTRACT_ADDRESS = 0x80d137CC2060CC1662E991b37A21656F00682556;  // WETHADDRESS
     IUniswapV2Router02 internal uniswap;
     
     address public czzToken;
@@ -183,7 +183,7 @@ contract HtV1Router is Ownable {
         uint amountIn,
         uint amountOutMin,
         address from
-        ) payable public {
+        ) payable public isManager{
         address[] memory path = new address[](3);
         address uniswap_token = CONTRACT_ADDRESS;
         path[0] = from;
@@ -205,8 +205,8 @@ contract HtV1Router is Ownable {
         uint amountAMin,
         uint amountBMin,
         address to
-    ) public {
-        address uniswap_token = 0x53b77a80E8Be299F22faa9405c39fD6Cfc451db8;
+    ) public isManager{
+        address uniswap_token = CONTRACT_ADDRESS;
         bytes4 id = bytes4(keccak256(bytes('addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)')));
         (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(id,tokenA,tokenB,amountADesired,amountBDesired,amountAMin,amountBMin,to,1000000000000000000000000));
         require(
@@ -220,22 +220,22 @@ contract HtV1Router is Ownable {
         uint amountOutMin,
         address[] memory path,
         address to
-        ) internal isManager{
+        ) internal {
       
         address uniswap_token = CONTRACT_ADDRESS;
         
         //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
         (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin,path,to,10000000000000000000000000));
-        //require(
-         //   success ,'uniswap_token::uniswap_token: uniswap_token failed'
-        //);
+        require(
+            success ,'uniswap_token::uniswap_token: uniswap_token failed'
+        );
     }
     function _swap1(
         uint amountIn,
         uint amountOutMin,
         address[] memory path,
         address to
-        ) internal isManager{
+        ) internal {
         
         uint[] memory amounts = uniswap.swapExactTokensForTokens(amountIn,amountOutMin,path,to,10000000000000000000000000);
         require(
@@ -243,20 +243,20 @@ contract HtV1Router is Ownable {
         );
     }
     
-    function swap_burn_get_amount(uint amountIn, address from) public view returns (uint[] memory amounts){
+    function swap_burn_get_amount(uint amountOut, address from) public view returns (uint[] memory amounts){
         address[] memory path = new address[](3);
         path[0] = from;
         path[1] = WETH_CONTRACT_ADDRESS;
         path[2] = czzToken;
-        return uniswap.getAmountsOut(amountIn,path);
+        return uniswap.getAmountsOut(amountOut,path);
     }
     
-    function swap_mint_get_amount(uint amountIn, address to) public view returns (uint[] memory amounts){
+    function swap_mint_get_amount(uint amountOut, address to) public view returns (uint[] memory amounts){
         address[] memory path = new address[](3);
         path[0] = czzToken;
         path[1] = WETH_CONTRACT_ADDRESS;
         path[2] = to;
-        return uniswap.getAmountsOut(amountIn,path);
+        return uniswap.getAmountsOut(amountOut,path);
     }
     
     function swapAndmint(address _to, uint _amountIn, uint256 mid, address toToken) payable public isManager {
@@ -296,7 +296,7 @@ contract HtV1Router is Ownable {
         mintItems[mid] = item;
     }
     
-    function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
+    function swapAndBurn( uint _amountout, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
     {
         // require(msg.value > 0);
         //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
@@ -304,8 +304,8 @@ contract HtV1Router is Ownable {
         path[0] = fromToken;
         path[1] = WETH_CONTRACT_ADDRESS;
         path[2] = czzToken;
-        uint[] memory amounts = swap_burn_get_amount(_amountIn, fromToken);
-        _swap(_amountIn, _amountOutMin, path, msg.sender);
+        uint[] memory amounts = swap_burn_get_amount(_amountout, fromToken);
+        _swap(_amountout, _amountOutMin, path, msg.sender);
         if(ntype != 1){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
@@ -334,7 +334,7 @@ contract HtV1Router is Ownable {
         minSignatures = value;
     }
     
-    function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public
+    function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public isManager
     {
         address czzToken1 = czzToken;
         ICzzSwap(czzToken1).burn(msg.sender, _amountIn);

@@ -1,0 +1,71 @@
+v1.1
+
+1.相关地址
+火币：
+token-user   ht:    火币测试转帐代币合约地址
+0xb897848b3e120e7Ef1ae0033296f8B8c00fD7486
+
+routerv1 add mine - ht:   火币转帐合约地址
+0x7c63Fa786eE74c147c40430a872c6570443de555
+
+swap router: swap 合约地址
+0xa0Bf1A926b5fA61C7713D488dcc0fE4f086E2fF9
+
+
+以太坊：
+token-user  eth:  以太坊测试转帐代币合约地址
+0x060184BBc35930C45aab8d833fB2b96d1142FF56
+
+routerV1 add mine - eth:  以太坊转帐合约地址
+0xeb848c8684A131Efd90ABC474010bA261e9dD90D
+
+router2: uniswap 合约地址
+0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16
+
+2.流程
+
+2.1
+approve:     授权可以对用户代币进行swap
+	function approve(address spender, uint256 amount) public virtual override returns (bool) 
+	
+调用合约地址：
+	token-user
+	
+参数：
+	spender： swap 合约地址
+	amount： 允许swap操作的数量限制
+
+
+2.2
+swap_burn_get_amount：  获取转换到相应CZZ代币的比率   
+	 function swap_burn_get_amount(uint amountOut, address from) public view returns (uint[] memory amounts)
+	 
+调用合约地址：
+	routerV1
+
+参数：
+	amountOut 要转换的代币量
+	from:	   代币合约地址  token-user
+	
+2.3
+swapAndBurn:
+
+	function swapAndBurn( uint _amountout, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
+	
+调用合约地址：
+	routerV1
+
+参数：
+	_amountout: 要转出的代币量
+	
+	_amountOutMin：最少要转出的代币量
+	
+	
+	fromToken： 代币合约地址  token-user
+	
+	ntype：   0：eth   1: czz  2: ht
+	
+	
+	toToken:  要转到的代币合约地址
+	
+	

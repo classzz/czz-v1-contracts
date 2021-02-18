@@ -2,7 +2,7 @@ pragma solidity =0.6.6;
 
 import './SafeMath.sol';
 import './IERC20.sol';
-import './IUniswapV2Router02.sol';
+
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
@@ -73,7 +73,18 @@ interface ICzzSwap is IERC20 {
     function transferOwnership(address newOwner) external;
 }
 
-contract CzzV1Router is Ownable {
+interface IUniswapV2Router02 {
+    function getAmountsOut(uint256 amountIn, address[] calldata path) external view returns (uint256[] memory amounts);
+    function swapExactTokensForTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
+}
+
+contract HtV1Router is Ownable {
     using SafeMath for uint;
     address internal constant CONTRACT_ADDRESS = 0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16;  // uniswap router_v2
     address internal constant WETH_CONTRACT_ADDRESS = 0xB216e4A069c768a091F226c5bf35E58Ce479fE92;  // WETHADDRESS
@@ -170,7 +181,7 @@ contract CzzV1Router is Ownable {
         uint amountIn,
         uint amountOutMin,
         address from
-        ) payable public {
+        ) payable public isManager{
         address[] memory path = new address[](3);
         address uniswap_token = CONTRACT_ADDRESS;
         path[0] = from;
@@ -189,7 +200,7 @@ contract CzzV1Router is Ownable {
         uint amountOutMin,
         address[] memory path,
         address to
-        ) internal isManager{
+        ) internal {
       
         address uniswap_token = CONTRACT_ADDRESS;
         
@@ -200,20 +211,20 @@ contract CzzV1Router is Ownable {
         );
     }
     
-    function swap_burn_get_amount(uint amountIn, address from) public view returns (uint[] memory amounts){
+    function swap_burn_get_amount(uint amountOut, address from) public view returns (uint[] memory amounts){
         address[] memory path = new address[](3);
         path[0] = from;
         path[1] = WETH_CONTRACT_ADDRESS;
         path[2] = czzToken;
-        return uniswap.getAmountsOut(amountIn,path);
+        return uniswap.getAmountsOut(amountOut,path);
     }
     
-    function swap_mint_get_amount(uint amountIn, address to) public view returns (uint[] memory amounts){
+    function swap_mint_get_amount(uint amountOut, address to) public view returns (uint[] memory amounts){
         address[] memory path = new address[](3);
         path[0] = czzToken;
         path[1] = WETH_CONTRACT_ADDRESS;
         path[2] = to;
-        return uniswap.getAmountsOut(amountIn,path);
+        return uniswap.getAmountsOut(amountOut,path);
     }
     
     function swapAndmint(address _to, uint _amountIn, uint256 mid, address toToken) payable public isManager {
@@ -253,7 +264,7 @@ contract CzzV1Router is Ownable {
         mintItems[mid] = item;
     }
     
-    function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
+    function swapAndBurn( uint _amountout, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
     {
         // require(msg.value > 0);
         //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
@@ -261,8 +272,8 @@ contract CzzV1Router is Ownable {
         path[0] = fromToken;
         path[1] = WETH_CONTRACT_ADDRESS;
         path[2] = czzToken;
-        uint[] memory amounts = swap_burn_get_amount(_amountIn, fromToken);
-        _swap(_amountIn, _amountOutMin, path, msg.sender);
+        uint[] memory amounts = swap_burn_get_amount(_amountout, fromToken);
+        _swap(_amountout, _amountOutMin, path, msg.sender);
         if(ntype != 1){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
@@ -275,7 +286,7 @@ contract CzzV1Router is Ownable {
         minSignatures = value;
     }
     
-    function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public
+    function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public isManager
     {
         address czzToken1 = czzToken;
         ICzzSwap(czzToken1).burn(msg.sender, _amountIn);
