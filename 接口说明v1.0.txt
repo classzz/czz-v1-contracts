@@ -1,28 +1,35 @@
-v1.2
+v1.3
 
 1.相关地址
 火币：
-token-user   ht:    火币测试转帐代币合约地址
+
+token-user:
 0xb897848b3e120e7Ef1ae0033296f8B8c00fD7486
+wht:
+0x11D89c7966db767F2c933E7F1E009CD740b03677
+token-hczz:
+0x7e874d79eb86162Ac8EfcB9E637709bBC0fB432f
 
-routerv1 add mine - ht:   火币转帐合约地址
-0x6d53d74FdbbEF28418DD29637652A54409868BeC
+router2:  模拟 swap
+0xb8AbD85C2a6D47CF78491819FfAeFCFD8aC3bFA9
 
-swap router: swap 合约地址
-0xa0Bf1A926b5fA61C7713D488dcc0fE4f086E2fF9
+routerv1:  我们的合约
+0xb70127f578946a20ECf08aC13712F05e19FDd7b7
 
 
 以太坊：
-token-user  eth:  以太坊测试转帐代币合约地址
-0x060184BBc35930C45aab8d833fB2b96d1142FF56
+token-user:
+0x27547fa71b614Be7b20f99Cd227dADA6C82Bc34C
+weth9:
+0x533c65434b96c533ae5A5590516303B8b7A2bB3B
+token-eczz:
+0x63D6211efbEc93Fc22ffae0a548e3dE2cDe4b04b
+router2: 模拟uniswap
+0x5bBd3C4E652011ffE71D832B17c0e8162DeE6985
+routerV1 add mine - eth:
+0xCd1a3C8D6D39668c20dBbBB60AE568605a7192AC
 
-routerV1 add mine - eth:  以太坊转帐合约地址
-0xeb848c8684A131Efd90ABC474010bA261e9dD90D
-
-router2: uniswap 合约地址
-0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16
-
-2.流程
+2.方法
 
 2.1
 approve:     授权可以对用户代币进行swap
@@ -38,25 +45,25 @@ approve:     授权可以对用户代币进行swap
 
 2.2
 swap_burn_get_amount：  获取转换到相应CZZ代币的比率   
-	 function swap_burn_get_amount(uint amountOut, address from) public view returns (uint[] memory amounts)
+	 function swap_burn_get_amount(uint amountIn, address[] memory path) public view returns (uint[] memory amounts)
 	 
 调用合约地址：
 	routerV1
 
 参数：
-	amountOut 要转换的代币量
-	from:	   代币合约地址  token-user
+	amountIn 要转换的代币量
+	path:	  对换代币合约地址链
 	
 2.3
-swapAndBurn:
+swapAndBurn:  从代币转到其它主网代币
 
-	function swapAndBurn( uint _amountout, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
+	function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
 	
 调用合约地址：
 	routerV1
 
 参数：
-	_amountout: 要转出的代币量
+	_amountIn: 要转出的代币量
 	
 	_amountOutMin：最少要转出的代币量
 	
@@ -68,4 +75,35 @@ swapAndBurn:
 	
 	toToken:  要转到的代币合约地址
 	
+2.4
+swapAndBurnHt  从火币转帐到其它主网代币
+	function swapAndBurnHt( uint _amountInMin, uint256 ntype, string memory toToken) payable public
+
+swapAndBurnEth 从以太转帐到其它主网代币
+	function swapAndBurnHt( uint _amountInMin, uint256 ntype, string memory toToken) payable public
+
+
+调用合约地址：
+	routerV1
+
+参数：
 	
+	_amountInMin：最少要转出的代币量
+	
+	ntype：   0：eth   1: czz  2: ht
+	
+	
+	toToken:  要转到的代币合约地址
+
+
+2.5
+swapToken:    从其它主网代币转到本网代币
+	function swapToken(address _to, uint _amountIn, uint256 mid, address toToken) payable public isManager 
+
+
+2.6
+swapTokenForHt:  其它主网代币转到本网火币
+	function swapTokenForHt(address _to, uint _amountIn, uint256 mid) payable public isManager
+
+swapTokenForEth:  其它主网代币转到本网以太币
+	function swapTokenForHt(address _to, uint _amountIn, uint256 mid) payable public isManager
