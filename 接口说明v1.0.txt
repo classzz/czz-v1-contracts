@@ -10,6 +10,9 @@ wht:
 token-hczz:
 0x7e874d79eb86162Ac8EfcB9E637709bBC0fB432f
 
+
+factory:
+0x9416ACA496e63594a0a53c1fFd5c15fef64887a9
 router2:  模拟 swap
 0xb8AbD85C2a6D47CF78491819FfAeFCFD8aC3bFA9
 
@@ -24,6 +27,8 @@ weth9:
 0x533c65434b96c533ae5A5590516303B8b7A2bB3B
 token-eczz:
 0x63D6211efbEc93Fc22ffae0a548e3dE2cDe4b04b
+factory:
+0x353489De250Ff4698b896A02729675360BF14C1F
 router2: 模拟uniswap
 0x5bBd3C4E652011ffE71D832B17c0e8162DeE6985
 routerV1 add mine - eth:
@@ -107,3 +112,16 @@ swapTokenForHt:  其它主网代币转到本网火币
 
 swapTokenForEth:  其它主网代币转到本网以太币
 	function swapTokenForHt(address _to, uint _amountIn, uint256 mid) payable public isManager
+
+
+2.7
+swap_burn_get_getReserves: 获取合约对的流动量
+	function swap_burn_get_getReserves(address factory, address tokenA, address tokenB) public view isManager returns (uint reserveA, uint reserveB)
+
+调用合约地址：
+	routerV1
+
+参数：
+	factory： 各主网swap 的factory地址：
+	tokenA：  合约对中A的地址
+	okenB：   合约对中B的地址
