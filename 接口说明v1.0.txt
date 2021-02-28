@@ -75,8 +75,7 @@ swapAndBurn:  从代币转到其它主网代币
 	
 	fromToken： 代币合约地址  token-user
 	
-	ntype：   0：eth   1: czz  2: ht
-	
+	ntype：   0：czz   1: eth  2: ht
 	
 	toToken:  要转到的代币合约地址
 	
@@ -95,8 +94,7 @@ swapAndBurnEth 从以太转帐到其它主网代币
 	
 	_amountInMin：最少要转出的代币量
 	
-	ntype：   0：eth   1: czz  2: ht
-	
+	ntype：   0：czz   1: eth  2: ht
 	
 	toToken:  要转到的代币合约地址
 
