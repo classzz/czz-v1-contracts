@@ -1,0 +1,44 @@
+http://127.0.0.1:8080/czzinterfaces/swap/getSwapInfos?systemType=eth
+
+
+{
+    "data": [
+        {
+            "tokenAddress": "0x27547fa71b614Be7b20f99Cd227dADA6C82Bc34C",
+            "symbol": "CZZ-U",
+            "createTime": "2021-02-24",
+            "systemType": "ETH",
+            "updateTime": "2021-02-24",
+            "iD": 1
+        },
+        {
+            "tokenAddress": "0x63D6211efbEc93Fc22ffae0a548e3dE2cDe4b04b",
+            "symbol": "CZZ-E",
+            "createTime": "2021-02-24",
+            "systemType": "ETH",
+            "updateTime": "2021-02-24",
+            "iD": 2
+        },
+        {
+            "tokenAddress": "0xb897848b3e120e7Ef1ae0033296f8B8c00fD7486",
+            "symbol": "CZZ-U",
+            "createTime": "2021-02-24",
+            "systemType": "HECO",
+            "updateTime": "2021-02-24",
+            "iD": 3
+        },
+        {
+            "tokenAddress": "0x7e874d79eb86162Ac8EfcB9E637709bBC0fB432f",
+            "symbol": "CZZ-E",
+            "createTime": "2021-02-24",
+            "systemType": "HECO",
+            "updateTime": "2021-02-24",
+            "iD": 4
+        }
+    ],
+    "state": 200,
+    "version": "v1.0"
+}
+
+
+systemType = ETH , HT
