@@ -337,7 +337,10 @@ contract HtV1Router is Ownable {
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path);
             //_swap(_amountIn, 0, path, _to);
             if(gas > 0){
-                _swap(gas, 0, path, msg.sender);
+                address[] memory path1 = new address[](2);
+                path1[0] = czzToken;
+                path1[1] = WETH_CONTRACT_ADDRESS;
+               _swapHtmint(gas, 0, path1, msg.sender);
             }
             _swap(_amountIn-gas, 0, path, _to);
             emit MintToken(_to, amounts[amounts.length - 1]);
@@ -504,7 +507,10 @@ contract HtV1Router is Ownable {
             ICzzSwap(czzToken).mint(msg.sender, _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path);
             if(gas > 0){
-                _swapSupportingFeeOnTransferTokens(gas, 0, path, msg.sender); 
+                address[] memory path1 = new address[](2);
+                path1[0] = czzToken;
+                path1[1] = WETH_CONTRACT_ADDRESS;
+                _swapHtmint(gas, 0, path1, msg.sender);
             }
             _swapSupportingFeeOnTransferTokens(_amountIn-gas, 0, path, _to);
             emit MintToken(_to, amounts[amounts.length - 1]);
@@ -544,7 +550,7 @@ contract HtV1Router is Ownable {
             ICzzSwap(czzToken).mint(msg.sender, _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path);
             if(gas > 0){
-                _swapHtmintSupportingFeeOnTransferTokens(gas, 0, path, msg.sender);
+               _swapHtmint(gas, 0, path, msg.sender);
             }
             _swapHtmintSupportingFeeOnTransferTokens(_amountIn-gas, 0, path, _to);
             emit MintToken(_to, amounts[amounts.length - 1]);
