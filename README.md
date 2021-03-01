@@ -22,17 +22,17 @@ heco(test-net)：
 ETH：
 ```
 token-user:
-0x27547fa71b614Be7b20f99Cd227dADA6C82Bc34C
+0x8D9400e53dDc4C5b2Fb7F115C7f5E4B2C074C42B
 weth9:
 0x533c65434b96c533ae5A5590516303B8b7A2bB3B
 token-eczz:
-0x63D6211efbEc93Fc22ffae0a548e3dE2cDe4b04b
+0xd25b078A0c4B60C52f8f6D5620eeea94284Bef7A
 factory:
 0x353489De250Ff4698b896A02729675360BF14C1F
 router2: test-uniswap
 0x5bBd3C4E652011ffE71D832B17c0e8162DeE6985
 routerV1 our-contract - eth:
-0x1E2E51B940cFB54E6f8F878Dc06eF7A5386364AE
+0x3C46aBF71B7688C65ef3b222902060D7EdB89875
 ```
 
 2.function
@@ -111,9 +111,8 @@ param:
 ```
 swapToken:   
 HT: HRC20 token swap for another HRC20 token 
-	function swapToken(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas) payable public isManager
 ETH: ERC20 token swap for another ERC20 token 
-	function swapToken(address _to, uint _amountIn, uint256 mid, address toToken) payable public isManager 
+	function swapToken(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas) payable public isManager
 ```
 
 2.6
@@ -122,7 +121,7 @@ swapTokenForHt:  HRC20 token swap for HT
 	function swapTokenForHt(address _to, uint _amountIn, uint256 mid, uint256 gas) payable public isManager 
 	
 swapTokenForEth:  ERC20 token swap for ETH 
-	function swapTokenForEth(address _to, uint _amountIn, uint256 mid) payable public isManager
+	function swapTokenForETH(address _to, uint _amountIn, uint256 mid, uint256 gas) payable public isManager
 ```
 
 2.7
