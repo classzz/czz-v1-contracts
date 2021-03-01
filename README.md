@@ -16,7 +16,7 @@ heco(test-net)：
     router2:  test-swap
     0xb8AbD85C2a6D47CF78491819FfAeFCFD8aC3bFA9
     routerv1-new: our-contract
-    0x0AeB79f6434db05150824d6b553BD9c245882099
+    0x6EE663201e4acCeD97ccc6A272414b5Ab81A2858
 ```
 
 ETH：
@@ -32,7 +32,7 @@ factory:
 router2: test-uniswap
 0x5bBd3C4E652011ffE71D832B17c0e8162DeE6985
 routerV1 our-contract - eth:
-0x3C46aBF71B7688C65ef3b222902060D7EdB89875
+0xBdc797c19bD4c2aDFa286bB57254F4397C4E61e7
 ```
 
 2.function
