@@ -19,6 +19,17 @@ heco(test-net)：
     0x6EE663201e4acCeD97ccc6A272414b5Ab81A2858
 ```
 
+ETH ropsten:
+eczz:
+0xBa96eE26FEb89BDBc5b9c8b55234c118ebe5E660
+czzuser:
+0x03B4870f6Bb10DDc16f0B6827Aa033D4374678E2
+uniswap_routerv2:
+0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
+routerV1:
+0x271b97370aCEED5aFa7d39bBb3dB952CeEc0287D
+
+```
 ETH：
 ```
 token-user:
