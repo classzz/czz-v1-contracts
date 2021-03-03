@@ -117,7 +117,8 @@ contract HtV1Router is Ownable {
     event MintToken(
         address indexed to,
         uint256 amount,
-        uint256 mid
+        uint256 mid,
+        uint256 amountIn
     );
     event BurnToken(
         address  indexed to,
@@ -282,8 +283,7 @@ contract HtV1Router is Ownable {
                _swapHtmint(gas, 0, path1, msg.sender, deadline);
             }
             _swap(_amountIn-gas, 0, path, _to, deadline);
-            emit MintToken(_to, amounts[amounts.length - 1],mid);
-            emit TransferToken(_to, amounts[amounts.length - 1]);
+            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
             deleteItems(mid);
             return;
         }
@@ -322,8 +322,7 @@ contract HtV1Router is Ownable {
             	_swapHtmint(gas, 0, path, msg.sender, deadline);
             }
             _swapHtmint(_amountIn-gas, 0, path, _to, deadline);
-            emit MintToken(_to, amounts[amounts.length - 1],mid);
-            emit TransferToken(_to, amounts[amounts.length - 1]);
+            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
             deleteItems(mid);
             return;
         }
@@ -379,6 +378,6 @@ contract HtV1Router is Ownable {
     {
         address czzToken1 = czzToken;
         ICzzSwap(czzToken1).mint(fromToken, _amountIn);
-        emit MintToken(fromToken, _amountIn, 0);
+        emit MintToken(fromToken, 0, 0, 0);
     }
 }

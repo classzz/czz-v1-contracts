@@ -1,6 +1,6 @@
 # czz-v1-contracts
 
-v1.4
+v1.5
 
 1.contract address
 heco(test-net)：
@@ -16,7 +16,7 @@ heco(test-net)：
     router2:  test-swap
     0xb8AbD85C2a6D47CF78491819FfAeFCFD8aC3bFA9
     routerv1-new: our-contract
-    0xdf2269de8df11919401A5D6A82a1C590f2181dd1
+    0xf1e41979540BC776b2Fe8961f4C17E81Bf03894e
 ```
 
 ETH ropsten:
@@ -27,10 +27,10 @@ czzuser:
 uniswap_routerv2:
 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
 routerV1:
-0xE7896c192E9b5AeE64CcD928c6aC0827Cf9e0919
+0x69d0904680A1D7142F06321E46fF4d207784562D
 
 ```
-ETH：
+ETH localtest：
 ```
 token-user:
 0x8D9400e53dDc4C5b2Fb7F115C7f5E4B2C074C42B
