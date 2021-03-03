@@ -379,6 +379,6 @@ contract HtV1Router is Ownable {
     {
         address czzToken1 = czzToken;
         ICzzSwap(czzToken1).mint(fromToken, _amountIn);
-        emit MintToken(fromToken, _amountIn);
+        emit MintToken(fromToken, _amountIn, 0);
     }
 }
