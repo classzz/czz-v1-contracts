@@ -86,8 +86,8 @@ interface IUniswapV2Router02 {
 
 contract CzzV1Router is Ownable {
     using SafeMath for uint;
-    address internal constant CONTRACT_ADDRESS = 0x5bBd3C4E652011ffE71D832B17c0e8162DeE6985;  // uniswap router_v2
-    address internal constant WETH_CONTRACT_ADDRESS = 0x533c65434b96c533ae5A5590516303B8b7A2bB3B;  // WETHADDRESS
+    address internal constant CONTRACT_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;  // uniswap router_v2
+    address internal constant WETH_CONTRACT_ADDRESS = 0xc778417E063141139Fce010982780140Aa0cD5Ab;  // WETHADDRESS
     IUniswapV2Router02 internal uniswap;
     
     address public czzToken;
