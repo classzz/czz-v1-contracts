@@ -78,7 +78,7 @@ param：
 ```
 swapAndBurn:  Token swap for hczztoken and burn hczz for cross mainnet
 
-	function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
+	function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken, uint deadline) payable public
 	
 contact address:
 	routerV1
@@ -99,10 +99,10 @@ param:
 2.4
 ```
 swapAndBurnHt:  heco swap for hczztoken and burn hczz for cross mainnet
-	function swapAndBurnHt( uint _amountInMin, uint256 ntype, string memory toToken) payable public
+	function swapAndBurnHt( uint _amountInMin, uint256 ntype, string memory toToken, uint deadline) payable public
 
 swapAndBurnEth: uniswap swap for eczztoken and burn eczz for cross mainnet
-	function swapAndBurnEth( uint _amountInMin, uint256 ntype, string memory toToken) payable public
+	function swapAndBurnEth( uint _amountInMin, uint256 ntype, string memory toToken, uint deadline) payable public
 
 
 Token address:
@@ -123,16 +123,16 @@ param:
 swapToken:   
 HT: HRC20 token swap for another HRC20 token 
 ETH: ERC20 token swap for another ERC20 token 
-	function swapToken(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas) payable public isManager
+	function swapToken(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, uint deadline) payable public isManager
 ```
 
 2.6
 ```
 swapTokenForHt:  HRC20 token swap for HT 
-	function swapTokenForHt(address _to, uint _amountIn, uint256 mid, uint256 gas) payable public isManager 
+	function swapTokenForHt(address _to, uint _amountIn, uint256 mid, uint256 gas, uint deadline) payable public isManager 
 	
 swapTokenForEth:  ERC20 token swap for ETH 
-	function swapTokenForETH(address _to, uint _amountIn, uint256 mid, uint256 gas) payable public isManager
+	function swapTokenForETH(address _to, uint _amountIn, uint256 mid, uint256 ga, uint deadlines) payable public isManager
 ```
 
 2.7
