@@ -86,8 +86,8 @@ interface IUniswapV2Router02 {
 
 contract CzzV1Router is Ownable {
     using SafeMath for uint;
-    address internal constant CONTRACT_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;  // uniswap router_v2
-    address internal constant WETH_CONTRACT_ADDRESS = 0xc778417E063141139Fce010982780140Aa0cD5Ab;  // WETHADDRESS
+    address internal CONTRACT_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;  // uniswap router_v2
+    address internal WETH_CONTRACT_ADDRESS = 0xc778417E063141139Fce010982780140Aa0cD5Ab;  // WETHADDRESS
     IUniswapV2Router02 internal uniswap;
     
     address public czzToken;
@@ -354,8 +354,28 @@ contract CzzV1Router is Ownable {
     
 
     
-    function setMinSignatures(uint8 value) public onlyOwner {
+    function setMinSignatures(uint8 value) public isManager {
         minSignatures = value;
+    }
+
+    function getMinSignatures() public view isManager returns(uint8){
+        return minSignatures;
+    }
+
+    function setSwapAddress(address addr) public isManager {
+        CONTRACT_ADDRESS = addr;
+    }
+
+    function getSwapAddress() public view isManager returns(address ){
+        return CONTRACT_ADDRESS ;
+    }
+
+    function setWTonkenAddress(address addr) public isManager {
+        WETH_CONTRACT_ADDRESS = addr;
+    }
+
+    function getWTonkenAddress() public view isManager returns(address ){
+        return WETH_CONTRACT_ADDRESS ;
     }
     
     function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public isManager
