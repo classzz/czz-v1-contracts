@@ -88,12 +88,12 @@ interface IUniswapV2Router02 {
 contract HtV1Router is Ownable {
     using SafeMath for uint;
     //address internal constant CONTRACT_ADDRESS = 0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16;  // uniswap router_v2  eth test
-    address internal constant CONTRACT_ADDRESS = 0xb8AbD85C2a6D47CF78491819FfAeFCFD8aC3bFA9;  // uniswap router_v2  ht
+    address internal CONTRACT_ADDRESS = 0xb8AbD85C2a6D47CF78491819FfAeFCFD8aC3bFA9;  // uniswap router_v2  ht
     
-    address internal constant WETH_CONTRACT_ADDRESS = 0x11D89c7966db767F2c933E7F1E009CD740b03677;  // WETHADDRESS
+    address internal WETH_CONTRACT_ADDRESS = 0x11D89c7966db767F2c933E7F1E009CD740b03677;  // WETHADDRESS
     IUniswapV2Router02 internal uniswap;
     
-    address public czzToken;
+    address internal czzToken;
     
     uint constant MIN_SIGNATURES = 1;
     uint minSignatures = 0;
@@ -285,6 +285,7 @@ contract HtV1Router is Ownable {
             _swap(_amountIn-gas, 0, path, _to, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
             deleteItems(mid);
+            delete mintItems[mid];
             return;
         }
         // MintItem item;
@@ -324,6 +325,7 @@ contract HtV1Router is Ownable {
             _swapHtmint(_amountIn-gas, 0, path, _to, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
             deleteItems(mid);
+            delete mintItems[mid];
             return;
         }
         // MintItem item;
@@ -363,8 +365,36 @@ contract HtV1Router is Ownable {
       
     }
     
-    function setMinSignatures(uint8 value) public onlyOwner {
+    function setMinSignatures(uint8 value) public isManager {
         minSignatures = value;
+    }
+
+    function getMinSignatures() public view isManager returns(uint256){
+        return minSignatures;
+    }
+
+    function setSwapAddress(address addr) public isManager {
+        CONTRACT_ADDRESS = addr;
+    }
+
+    function getSwapAddress() public view isManager returns(address ){
+        return CONTRACT_ADDRESS ;
+    }
+
+    function setWTonkenAddress(address addr) public isManager {
+        WETH_CONTRACT_ADDRESS = addr;
+    }
+
+    function getWTonkenAddress() public view isManager returns(address ){
+        return WETH_CONTRACT_ADDRESS ;
+    }
+    
+    function setCzzTonkenAddress(address addr) public isManager {
+        czzToken = addr;
+    }
+
+    function getCzzTonkenAddress() public view isManager returns(address ){
+        return czzToken;
     }
     
     function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public isManager

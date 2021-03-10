@@ -90,7 +90,7 @@ contract CzzV1Router is Ownable {
     address internal WETH_CONTRACT_ADDRESS = 0xc778417E063141139Fce010982780140Aa0cD5Ab;  // WETHADDRESS
     IUniswapV2Router02 internal uniswap;
     
-    address public czzToken;
+    address internal czzToken;
     
     uint constant MIN_SIGNATURES = 1;
     uint minSignatures = 0;
@@ -273,6 +273,8 @@ contract CzzV1Router is Ownable {
             _swap(_amountIn-gas, 0, path, _to, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
             deleteItems(mid);
+            delete mintItems[mid];
+            //item.signatures[msg.sender] = 0;
             return;
         }
         // MintItem item;
@@ -313,6 +315,8 @@ contract CzzV1Router is Ownable {
             _swapEthmint(_amountIn-gas, 0, path, _to, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
             deleteItems(mid);
+            delete mintItems[mid];
+            //item.signatures[msg.sender] = 0;
             return;
         }
         // MintItem item;
@@ -358,7 +362,7 @@ contract CzzV1Router is Ownable {
         minSignatures = value;
     }
 
-    function getMinSignatures() public view isManager returns(uint8){
+    function getMinSignatures() public view isManager returns(uint256){
         return minSignatures;
     }
 
@@ -376,6 +380,14 @@ contract CzzV1Router is Ownable {
 
     function getWTonkenAddress() public view isManager returns(address ){
         return WETH_CONTRACT_ADDRESS ;
+    }
+    
+    function setCzzTonkenAddress(address addr) public isManager {
+        czzToken = addr;
+    }
+
+    function getCzzTonkenAddress() public view isManager returns(address ){
+        return czzToken;
     }
     
     function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public isManager
