@@ -68,7 +68,7 @@ contract ERC20 is Context, IERC20 {
         _name = name;
         _symbol = symbol;
         _decimals = 18;
-        _totalSupply = 100000000*10**18;
+        _totalSupply = 0;
         _balances[msg.sender] = _totalSupply;
     }
 
