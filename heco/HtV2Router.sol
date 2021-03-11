@@ -1,10 +1,10 @@
 pragma solidity =0.6.6;
 
-//import './SafeMath.sol';
+import './SafeMath.sol';
 import './IERC20.sol';
-import './UniswapV2Library.sol';
-import './TransferHelper.sol';
-import './IWETH.sol';
+import './IMdexFactory.sol';
+import "./IMdexPair.sol";
+
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
@@ -86,7 +86,15 @@ interface IUniswapV2Router02 {
     ) external returns (uint[] memory amounts);
 }
 
-contract CzzV1Router is Ownable {
+interface IWHT {
+    function deposit() external payable;
+
+    function transfer(address to, uint value) external returns (bool);
+
+    function withdraw(uint) external;
+}
+
+contract HtV1Router is Ownable {
     using SafeMath for uint;
     address internal CONTRACT_ADDRESS;  // uniswap router_v2  ht
     address internal FACTORY;    //factory
@@ -155,6 +163,10 @@ contract CzzV1Router is Ownable {
     
     receive() external payable {}
     
+    function pairFor(address factory, address tokenA, address tokenB) public view returns (address pair){
+        pair = IMdexFactory(factory).pairFor(tokenA, tokenB);
+    }
+    
     function addManager(address manager) public onlyOwner{
         managers[manager] = 1;
     }
@@ -185,7 +197,7 @@ contract CzzV1Router is Ownable {
         } 
         return 1;
     }
-    
+
     function _swap(
         uint amountIn,
         uint amountOutMin,
@@ -204,7 +216,7 @@ contract CzzV1Router is Ownable {
         );
     }
     
-    function _swapEthBurn(
+    function _swapHtBurn(
         uint amountInMin,
         address[] memory path,
         address to, 
@@ -219,8 +231,8 @@ contract CzzV1Router is Ownable {
             success ,'uniswap_token::uniswap_token: uniswap_token_eth failed'
         );
     }
-
-    function _swapEthmint(
+    
+    function _swapHtmint(
         uint amountIn,
         uint amountOurMin,
         address[] memory path,
@@ -242,8 +254,8 @@ contract CzzV1Router is Ownable {
     function _swapSupportingFeeOnTransferTokens(address[] memory path, address _to, uint gas) internal virtual returns (uint256 amount){
         require(path[1] == WETH_CONTRACT_ADDRESS, 'Uniswap Router: INVALID_PATH');
         (address input, address output) = (path[0], path[1]);
-        (address token0,) = UniswapV2Library.sortTokens(input, output);
-        IUniswapV2Pair pair = IUniswapV2Pair(UniswapV2Library.pairFor(FACTORY, input, output));
+        (address token0,) = IMdexFactory(FACTORY).sortTokens(input, output);
+        IMdexPair pair = IMdexPair(pairFor(FACTORY,input, output));
         uint amountInput;
         uint amountOutput;
         uint amount0Out;
@@ -252,33 +264,35 @@ contract CzzV1Router is Ownable {
             (uint reserve0, uint reserve1,) = pair.getReserves();
             (uint reserveInput, uint reserveOutput) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
             amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveInput);
-            amountOutput = UniswapV2Library.getAmountOut(amountInput, reserveInput, reserveOutput);
+            amountOutput = IMdexFactory(FACTORY).getAmountOut(amountInput, reserveInput, reserveOutput);
         }
         {
             (amount0Out, amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
-            address to = UniswapV2Library.pairFor(FACTORY, output, path[2]);
+            address to = pairFor(FACTORY,output, path[2]);
             pair.swap(amount0Out, amount1Out, address(this), new bytes(0));
             
             uint amountOut = IERC20(WETH_CONTRACT_ADDRESS).balanceOf(address(this));
             require(amountOut > gas, 'Uniswap Router: INSUFFICIENT_GAS');
-            IWETH(WETH_CONTRACT_ADDRESS).withdraw(gas);
+            IWHT(WETH_CONTRACT_ADDRESS).withdraw(gas);
             TransferHelper.safeTransferFrom(WETH_CONTRACT_ADDRESS, address(this), to, amountOut-gas);
             
             (input, output) = (path[1], path[2]);
-            (token0,) = UniswapV2Library.sortTokens(input, output);
+            (token0,) = IMdexFactory(FACTORY).sortTokens(input, output);
         }
-        pair = IUniswapV2Pair(UniswapV2Library.pairFor(FACTORY, input, output));
+        pair = IMdexPair(pairFor(FACTORY, input, output));
         { // scope to avoid stack too deep errors
             (uint reserve0, uint reserve1,) = pair.getReserves();
             (uint reserveInput, uint reserveOutput) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
             amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveInput);
-            amountOutput = UniswapV2Library.getAmountOut(amountInput, reserveInput, reserveOutput);
+            amountOutput = IMdexFactory(FACTORY).getAmountOut(amountInput, reserveInput, reserveOutput);
         }
         (amount0Out, amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
         
         pair.swap(amount0Out, amount1Out, _to, new bytes(0));
         return amountOutput;
     }
+    
+
     function swapExactTokensForTokensSupportingFeeOnTransferTokens(
         uint amountIn,
         uint amountOutMin,
@@ -292,7 +306,7 @@ contract CzzV1Router is Ownable {
         require(address(0) != factory); 
         require(address(0) != WethAddr); 
         TransferHelper.safeTransferFrom(
-            path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amountIn
+            path[0], msg.sender, pairFor(factory, path[0], path[1]), amountIn
         );
         uint balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
         FACTORY = factory;
@@ -307,15 +321,15 @@ contract CzzV1Router is Ownable {
     
     function _swapETHSupportingFeeOnTransferTokens(address[] memory path, address factory) internal virtual {
         (address input, address output) = (path[0], path[1]);
-        (address token0,) = UniswapV2Library.sortTokens(input, output);
-        IUniswapV2Pair pair = IUniswapV2Pair(UniswapV2Library.pairFor(factory, input, output));
+        (address token0,) = IMdexFactory(factory).sortTokens(input, output);
+        IMdexPair pair = IMdexPair(pairFor(factory, input, output));
         uint amountInput;
         uint amountOutput;
         { // scope to avoid stack too deep errors
             (uint reserve0, uint reserve1,) = pair.getReserves();
             (uint reserveInput, uint reserveOutput) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
             amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveInput);
-            amountOutput = UniswapV2Library.getAmountOut(amountInput, reserveInput, reserveOutput);
+            amountOutput = IMdexFactory(factory).getAmountOut(amountInput, reserveInput, reserveOutput);
         }
         (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
         pair.swap(amount0Out, amount1Out, address(this), new bytes(0));
@@ -340,23 +354,23 @@ contract CzzV1Router is Ownable {
         require(address(0) != WethAddr); 
         require(path[1] == WethAddr, 'Uniswap Router: INVALID_PATH');
         TransferHelper.safeTransferFrom(
-            path[0], msg.sender, UniswapV2Library.pairFor(factory, path[0], path[1]), amountIn
+            path[0], msg.sender, pairFor(factory, path[0], path[1]), amountIn
         );
         _swapETHSupportingFeeOnTransferTokens(path, factory);
         uint amountOut = IERC20(WethAddr).balanceOf(address(this));
         require(amountOut >= amountOutMin, 'Uniswap Router: INSUFFICIENT_OUTPUT_AMOUNT');
         require(amountOut > gas, 'Uniswap Router: INSUFFICIENT_GAS');
-        IWETH(WethAddr).withdraw(amountOut);
+        IWHT(WethAddr).withdraw(amountOut);
         TransferHelper.safeTransferETH(to, amountOut-gas);
         return amountOut-gas;
     }
     
     function swap_burn_get_getReserves(address factory, address tokenA, address tokenB) public view isManager returns (uint reserveA, uint reserveB){
         require(address(0) != factory);
-        return UniswapV2Library.getReserves(factory, tokenA, tokenB);
+        return  IMdexFactory(factory).getReserves(tokenA, tokenB);
     }
     
-     function swap_burn_get_amount(uint amountIn, address[] memory path,address routerAddr) public view returns (uint[] memory amounts){
+    function swap_burn_get_amount(uint amountIn, address[] memory path,address routerAddr) public view returns (uint[] memory amounts){
         require(address(0) != routerAddr); 
         return IUniswapV2Router02(routerAddr).getAmountsOut(amountIn,path);
     }
@@ -401,7 +415,7 @@ contract CzzV1Router is Ownable {
                 address[] memory path1 = new address[](2);
                 path1[0] = czzToken;
                 path1[1] = WethAddr;
-                 _swapEthmint(gas, 0, path1, msg.sender, routerAddr, deadline);
+               _swapHtmint(gas, 0, path1, msg.sender, routerAddr, deadline);
             }
             _swap(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
@@ -454,8 +468,8 @@ contract CzzV1Router is Ownable {
         // MintItem item;
         mintItems[mid] = item;
     }
-    
-    function swapTokenForEth(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager {
+  
+    function swapTokenForHt(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager {
         require(address(0) != _to);
         require(address(0) != routerAddr); 
         require(address(0) != WethAddr); 
@@ -485,9 +499,9 @@ contract CzzV1Router is Ownable {
             ICzzSwap(czzToken).mint(msg.sender, _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
             if(gas > 0){
-                _swapEthmint(gas, 0, path, msg.sender, routerAddr, deadline);
+            	_swapHtmint(gas, 0, path, msg.sender, routerAddr, deadline);
             }
-            _swapEthmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
+            _swapHtmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
             deleteItems(mid);
             delete mintItems[mid];
@@ -497,7 +511,7 @@ contract CzzV1Router is Ownable {
         mintItems[mid] = item;
     }
     
-    function swapTokenForEthV2(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, address factory, uint deadline) payable public isManager {
+function swapTokenForHtV2(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, address factory, uint deadline) payable public isManager {
         require(address(0) != _to);
         require(address(0) != routerAddr); 
         require(address(0) != WethAddr); 
@@ -548,14 +562,14 @@ contract CzzV1Router is Ownable {
         path[2] = czzToken;
         uint[] memory amounts = swap_burn_get_amount(_amountIn, path, routerAddr);
         _swap(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
-        if(ntype != 1){
+        if(ntype != 2){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
         }
       
     }
     
-    function swapAndBurnEth( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
+    function swapAndBurnHt( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
     {
         require(address(0) != routerAddr); 
         require(address(0) != WethAddr); 
@@ -564,15 +578,15 @@ contract CzzV1Router is Ownable {
         path[0] = address(WethAddr);
         path[1] = address(czzToken);
         uint[] memory amounts = swap_burn_get_amount(msg.value, path, routerAddr);
-        _swapEthBurn(_amountInMin, path, msg.sender, routerAddr, deadline);
-        if(ntype != 1){
+        _swapHtBurn(_amountInMin, path, msg.sender, routerAddr, deadline);
+        if(ntype != 2){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
         }
       
     }
     
-    
+
     function setMinSignatures(uint8 value) public isManager {
         minSignatures = value;
     }
@@ -601,5 +615,31 @@ contract CzzV1Router is Ownable {
         address czzToken1 = czzToken;
         ICzzSwap(czzToken1).mint(fromToken, _amountIn);
         emit MintToken(fromToken, 0, 0, _amountIn);
+    }
+}
+
+// helper methods for interacting with ERC20 tokens and sending ETH that do not consistently return true/false
+library TransferHelper {
+    function safeApprove(address token, address to, uint value) internal {
+        // bytes4(keccak256(bytes('approve(address,uint256)')));
+        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x095ea7b3, to, value));
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: APPROVE_FAILED');
+    }
+
+    function safeTransfer(address token, address to, uint value) internal {
+        // bytes4(keccak256(bytes('transfer(address,uint256)')));
+        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0xa9059cbb, to, value));
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FAILED');
+    }
+
+    function safeTransferFrom(address token, address from, address to, uint value) internal {
+        // bytes4(keccak256(bytes('transferFrom(address,address,uint256)')));
+        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x23b872dd, from, to, value));
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FROM_FAILED');
+    }
+
+    function safeTransferETH(address to, uint value) internal {
+        (bool success,) = to.call{value : value}(new bytes(0));
+        require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
     }
 }
