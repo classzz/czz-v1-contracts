@@ -1,6 +1,6 @@
 # czz-v1-contracts
 
-v1.5
+v1.6
 
 1.contract address
 heco(test-net)：
@@ -8,42 +8,30 @@ heco(test-net)：
     token-mdx:
     0xD5974f172d6C5ecF5fdF3BC5354cd4824873802D
     wht:
-    0x11D89c7966db767F2c933E7F1E009CD740b03677
+    0xA9e7417c676F70E5a13c919e78FB1097166568C5
     token-hczz-new:
-    0xE30d43717DB115D2f205acCfeCedec67aDfDE089
+    0xF8444BF82C634d6F575545dbb6B77748bB1e3e19
     factory:
-    0x9416ACA496e63594a0a53c1fFd5c15fef64887a9
+    0x0419082bb45f47Fe5c530Ea489e16478819910F3
     router2:  test-swap
-    0xb8AbD85C2a6D47CF78491819FfAeFCFD8aC3bFA9
+    0x539A9Fbb81D1D2DC805c698B55C8DF81cbA6b350
     routerv1-new: our-contract
-    0xf1e41979540BC776b2Fe8961f4C17E81Bf03894e
+    0x034d0162892893e688DC53f3194160f06EBf265E
 ```
 
 ETH ropsten:
-eczz:
-0xBa96eE26FEb89BDBc5b9c8b55234c118ebe5E660
-czzuser:
-0x03B4870f6Bb10DDc16f0B6827Aa033D4374678E2
-uniswap_routerv2:
-0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
-routerV1:
-0x69d0904680A1D7142F06321E46fF4d207784562D
-
-```
-ETH localtest：
-```
-token-user:
-0x8D9400e53dDc4C5b2Fb7F115C7f5E4B2C074C42B
-weth9:
-0x533c65434b96c533ae5A5590516303B8b7A2bB3B
-token-eczz:
-0xd25b078A0c4B60C52f8f6D5620eeea94284Bef7A
-factory:
-0x353489De250Ff4698b896A02729675360BF14C1F
-router2: test-uniswap
-0x5bBd3C4E652011ffE71D832B17c0e8162DeE6985
-routerV1 our-contract - eth:
-0xBdc797c19bD4c2aDFa286bB57254F4397C4E61e7
+	eczz:
+	0xa0d786dD929e5207045C8F4aeBe2Cdb4F4885beD
+	czzuser:
+	0x03B4870f6Bb10DDc16f0B6827Aa033D4374678E2
+	uniswap_routerv2:
+	0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
+	routerV1:
+	0xabD6bFC53773603a034b726938b0dfCaC3e645Ab
+	weth:
+	0xc778417E063141139Fce010982780140Aa0cD5Ab
+	factory:
+	0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f
 ```
 
 2.function
@@ -64,7 +52,7 @@ param：
 2.2
 ```
 swap_burn_get_amount：  get swap token rate  
-	 function swap_burn_get_amount(uint amountIn, address[] memory path) public view returns (uint[] memory amounts)
+	 function swap_burn_get_amount(uint amountIn, address[] memory path, address routerAddr) public view returns (uint[] memory amounts)
 	 
 contact address:
 	routerV1
@@ -72,13 +60,14 @@ contact address:
 param：
 	amountIn  swap token amount
 	path:	  token path array
+	routerAddr: swap address
 ```
 
 2.3
 ```
 swapAndBurn:  Token swap for hczztoken and burn hczz for cross mainnet
 
-	function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken, uint deadline) payable public
+	function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
 	
 contact address:
 	routerV1
@@ -95,14 +84,18 @@ param:
 	
 	
 	toToken:  The address of the token contract to be transferred to
+
+	routerAddr: swap address
+
+	WethAddr: ETH->weth address or HT->wth address
 ```	
 2.4
 ```
 swapAndBurnHt:  heco swap for hczztoken and burn hczz for cross mainnet
-	function swapAndBurnHt( uint _amountInMin, uint256 ntype, string memory toToken, uint deadline) payable public
+	function swapAndBurnHt( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
 
 swapAndBurnEth: uniswap swap for eczztoken and burn eczz for cross mainnet
-	function swapAndBurnEth( uint _amountInMin, uint256 ntype, string memory toToken, uint deadline) payable public
+	function swapAndBurnEth( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
 
 
 Token address:
@@ -116,6 +109,10 @@ param:
 	
 	
 	toToken:  The address of the token contract to be transferred to
+
+	routerAddr: swap address
+
+	WethAddr: ETH->weth address or HT->wth address
 ```
 
 2.5
@@ -123,16 +120,16 @@ param:
 swapToken:   
 HT: HRC20 token swap for another HRC20 token 
 ETH: ERC20 token swap for another ERC20 token 
-	function swapToken(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, uint deadline) payable public isManager
+	function swapToken(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager
 ```
 
 2.6
 ```
 swapTokenForHt:  HRC20 token swap for HT 
-	function swapTokenForHt(address _to, uint _amountIn, uint256 mid, uint256 gas, uint deadline) payable public isManager 
+	function swapTokenForHt(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager 
 	
 swapTokenForEth:  ERC20 token swap for ETH 
-	function swapTokenForETH(address _to, uint _amountIn, uint256 mid, uint256 gas, uint deadlines) payable public isManager
+	function swapTokenForETH(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadlines) payable public isManager
 ```
 
 2.7
@@ -146,5 +143,5 @@ Toden address:
 param：
 	factory： 
 	tokenA：  
-	okenB：   
+	tokenB：   
 ```
