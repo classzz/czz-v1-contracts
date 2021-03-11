@@ -132,7 +132,7 @@ swapTokenForHt:  HRC20 token swap for HT
 	function swapTokenForHt(address _to, uint _amountIn, uint256 mid, uint256 gas, uint deadline) payable public isManager 
 	
 swapTokenForEth:  ERC20 token swap for ETH 
-	function swapTokenForETH(address _to, uint _amountIn, uint256 mid, uint256 ga, uint deadlines) payable public isManager
+	function swapTokenForETH(address _to, uint _amountIn, uint256 mid, uint256 gas, uint deadlines) payable public isManager
 ```
 
 2.7
