@@ -251,7 +251,7 @@ contract HtV1Router is Ownable {
     
     // **** SWAP (supporting fee-on-transfer tokens) ****
     // requires the initial amount to have already been sent to the first pair   token -> weth -> token 
-    function _swapSupportingFeeOnTransferTokens(address[] memory path, address _to, uint gas) internal virtual returns (uint256 amount){
+    function _swapSupportingFeeOnTransferTokens(address[] memory path, address _to, uint gas) internal virtual {
         require(path[1] == WETH_CONTRACT_ADDRESS, 'Uniswap Router: INVALID_PATH');
         (address input, address output) = (path[0], path[1]);
         (address token0,) = IMdexFactory(FACTORY).sortTokens(input, output);
@@ -289,7 +289,6 @@ contract HtV1Router is Ownable {
         (amount0Out, amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
         
         pair.swap(amount0Out, amount1Out, _to, new bytes(0));
-        return amountOutput;
     }
     
 
@@ -302,7 +301,7 @@ contract HtV1Router is Ownable {
         address WethAddr, 
         address factory,
         uint deadline
-    ) public virtual ensure(deadline) returns (uint256 amount){
+    ) public virtual ensure(deadline) {
         require(address(0) != factory); 
         require(address(0) != WethAddr); 
         TransferHelper.safeTransferFrom(
@@ -311,12 +310,11 @@ contract HtV1Router is Ownable {
         uint balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
         FACTORY = factory;
         WETH_CONTRACT_ADDRESS = WethAddr;
-        uint256 _amount = _swapSupportingFeeOnTransferTokens(path, to, gas);
+        _swapSupportingFeeOnTransferTokens(path, to, gas);
         require(
             IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
             'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
         );
-        return _amount;
     }
     
     function _swapETHSupportingFeeOnTransferTokens(address[] memory path, address factory) internal virtual {
@@ -348,7 +346,6 @@ contract HtV1Router is Ownable {
         public
         virtual
         ensure(deadline)
-        returns (uint256 amount)
     {
         require(address(0) != factory); 
         require(address(0) != WethAddr); 
@@ -362,7 +359,6 @@ contract HtV1Router is Ownable {
         require(amountOut > gas, 'Uniswap Router: INSUFFICIENT_GAS');
         IWHT(WethAddr).withdraw(amountOut);
         TransferHelper.safeTransferETH(to, amountOut-gas);
-        return amountOut-gas;
     }
     
     function swap_burn_get_getReserves(address factory, address tokenA, address tokenB) public view isManager returns (uint reserveA, uint reserveB){
@@ -418,7 +414,7 @@ contract HtV1Router is Ownable {
                _swapHtmint(gas, 0, path1, msg.sender, routerAddr, deadline);
             }
             _swap(_amountIn-gas, 0, path, _to, routerAddr, deadline);
-            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
+            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
             deleteItems(mid);
             delete mintItems[mid];
             return;
@@ -460,7 +456,7 @@ contract HtV1Router is Ownable {
             //_swap(_amountIn, 0, path, _to);
             //_swap(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             swapExactTokensForTokensSupportingFeeOnTransferTokens(_amountIn,0,path,_to,gas,WethAddr,factory,deadline); 
-            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
+            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
             deleteItems(mid);
             delete mintItems[mid];
             return;
@@ -502,7 +498,7 @@ contract HtV1Router is Ownable {
             	_swapHtmint(gas, 0, path, msg.sender, routerAddr, deadline);
             }
             _swapHtmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
-            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
+            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
             deleteItems(mid);
             delete mintItems[mid];
             return;
@@ -540,8 +536,8 @@ function swapTokenForHtV2(address _to, uint _amountIn, uint256 mid, uint256 gas,
             require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
             ICzzSwap(czzToken).mint(msg.sender, _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
-            uint256 amount = swapExactTokensForETHSupportingFeeOnTransferTokens(_amountIn,0,path,_to,gas,WethAddr,factory,deadline);
-            emit MintToken(_to, amounts[amounts.length - 1],mid,amount);
+            swapExactTokensForETHSupportingFeeOnTransferTokens(_amountIn,0,path,_to,gas,WethAddr,factory,deadline);
+            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
             deleteItems(mid);
             delete mintItems[mid];
             return;
