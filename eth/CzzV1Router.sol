@@ -258,7 +258,7 @@ contract CzzV1Router is Ownable {
         return UniswapV2Library.getReserves(factory, tokenA, tokenB);
     }
     
-     function swap_burn_get_amount(uint amountIn, address[] memory path,address routerAddr) public view returns (uint[] memory amounts){
+    function swap_burn_get_amount(uint amountIn, address[] memory path,address routerAddr) public view returns (uint[] memory amounts){
         require(address(0) != routerAddr); 
         return IUniswapV2Router02(routerAddr).getAmountsOut(amountIn,path);
     }
