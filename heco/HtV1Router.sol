@@ -99,12 +99,14 @@ contract HtV1Router is Ownable {
     mapping (address => uint8) private managers;
     mapping (uint => MintItem) private mintItems;
     uint256[] private pendingItems;
+    struct KeyFlag { address key; bool deleted; }
 
     struct MintItem {
         address to;
         uint256 amount;
         uint8 signatureCount;
         mapping (address => uint8) signatures;
+        KeyFlag[] keys;
     }
    
     event MintItemCreated(
@@ -178,6 +180,28 @@ contract HtV1Router is Ownable {
             }
         } 
         return 1;
+    }
+    
+    function insert_signature(MintItem storage item, address key) internal returns (bool replaced)
+    {
+        if (item.signatures[key] == 1)
+            return false;
+        else
+        {
+            KeyFlag memory key1;
+            item.signatures[key] = 1;
+            key1.key = key;
+            item.keys.push(key1);
+            return true;
+        }
+    }
+    
+    function remove_signature_all(MintItem storage self) internal
+    {
+        for(uint256 i = 0; i < self.keys.length; i++){
+            address key = self.keys[i].key;
+            delete self.signatures[key];
+        }
     }
 
     function _swap(
@@ -254,10 +278,9 @@ contract HtV1Router is Ownable {
         //require(address(this).balance >= _amountIn);
      
         MintItem storage item = mintItems[mid];
-        require(item.signatures[msg.sender]==0, "repeat sign");
+        require(insert_signature(item, msg.sender), "repeat sign");
         item.to = _to;
         item.amount = _amountIn;
-        item.signatures[msg.sender] = 1;
         if(item.signatureCount++ == 0) {
             pendingItems.push(mid);
             emit MintItemCreated(msg.sender, _to, _amountIn, mid);
@@ -284,7 +307,8 @@ contract HtV1Router is Ownable {
                _swapHtmint(gas, 0, path1, msg.sender, routerAddr, deadline);
             }
             _swap(_amountIn-gas, 0, path, _to, routerAddr, deadline);
-            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
+            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
+            remove_signature_all(item);
             deleteItems(mid);
             delete mintItems[mid];
             return;
@@ -301,14 +325,14 @@ contract HtV1Router is Ownable {
         //require(address(this).balance >= _amountIn);
      
         MintItem storage item = mintItems[mid];
-        require(item.signatures[msg.sender]==0, "repeat sign");
+        require(insert_signature(item, msg.sender), "repeat sign");
         item.to = _to;
         item.amount = _amountIn;
-        item.signatures[msg.sender] = 1;
         if(item.signatureCount++ == 0) {
             pendingItems.push(mid);
             emit MintItemCreated(msg.sender, _to, _amountIn, mid);
         }
+
         if(item.signatureCount >= minSignatures)
         {
             //require(item.to == _to, "mismatch to address");
@@ -326,7 +350,8 @@ contract HtV1Router is Ownable {
             	_swapHtmint(gas, 0, path, msg.sender, routerAddr, deadline);
             }
             _swapHtmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
-            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn-gas);
+            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
+            remove_signature_all(item);
             deleteItems(mid);
             delete mintItems[mid];
             return;
@@ -399,6 +424,6 @@ contract HtV1Router is Ownable {
     {
         address czzToken1 = czzToken;
         ICzzSwap(czzToken1).mint(fromToken, _amountIn);
-        emit MintToken(fromToken, 0, 0, _amountIn);
+        emit MintToken(fromToken, 0, 0,_amountIn);
     }
 }
