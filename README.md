@@ -8,7 +8,7 @@ heco(test-net)：
     token-mdx:
     0xD5974f172d6C5ecF5fdF3BC5354cd4824873802D
 	token-hczz-new:
-    0xF8444BF82C634d6F575545dbb6B77748bB1e3e19
+    0x7ff7FF503771D44B98985049a2b0595b38ADE8dF
 
 	DogeSwap:
     factory:
@@ -29,14 +29,14 @@ heco(test-net)：
 
 
     routerv1: our-contract
-    0x034d0162892893e688DC53f3194160f06EBf265E
+    0xb80c9a40769ea239F4859888525aeae92914B2F3
 ```
 
 ETH ropsten:
 	czzuser:
 	0x03B4870f6Bb10DDc16f0B6827Aa033D4374678E2
 	eczz:
-	0xa0d786dD929e5207045C8F4aeBe2Cdb4F4885beD
+	0x2C7Cb26e96FbA2758c794F7bB3c8Bf38243b1586
 
 	Uniswap
 	factory:
@@ -56,9 +56,20 @@ ETH ropsten:
 	0xc778417e063141139fce010982780140aa0cd5ab
 
 	routerV1:
-	0xabD6bFC53773603a034b726938b0dfCaC3e645Ab
+	0x216202E52eF9c9B2616b8a89be753D5a676eb0f2
 ```
 
+BSC:
+	bczz:
+	0xBa96eE26FEb89BDBc5b9c8b55234c118ebe5E660
+
+	Pancakeswap
+
+	routerv1:
+	0x15c1EAcF78a947759E6165e47AAB4D90546d0798
+
+
+```
 
 
 
@@ -156,6 +167,9 @@ swapAndBurnHt:  heco swap for hczztoken and burn hczz for cross mainnet
 swapAndBurnEth: uniswap swap for eczztoken and burn eczz for cross mainnet
 	function swapAndBurnEth( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
 
+swapAndBurnBsc: uniswap swap for bczztoken and burn eczz for cross mainnet
+	function swapAndBurnBsc( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
+
 
 Token address:
 	routerV1
@@ -189,6 +203,9 @@ swapTokenForHt:  HRC20 token swap for HT
 	
 swapTokenForEth:  ERC20 token swap for ETH 
 	function swapTokenForETH(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadlines) payable public isManager
+
+swapTokenForBsc:  ERC20 token swap for BSC 
+	function swapTokenForBsc(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadlines) payable public isManager
 ```
 
 2.7
