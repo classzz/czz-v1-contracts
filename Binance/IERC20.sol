@@ -1,6 +1,6 @@
-pragma solidity ^0.5.4;
+pragma solidity ^0.6.6;
 
-interface ITRC20 {
+interface IERC20 {
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
 
@@ -12,4 +12,3 @@ interface ITRC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 
 }
-

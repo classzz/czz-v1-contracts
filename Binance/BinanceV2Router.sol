@@ -1,9 +1,10 @@
 pragma solidity =0.6.6;
 
-import './SafeMath.sol';
+//import './SafeMath.sol';
 import './IERC20.sol';
-import './IMdexFactory.sol';
-
+import './PancakeLibrary.sol';
+import './TransferHelper.sol';
+import './IWETH.sol';
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
@@ -85,11 +86,11 @@ interface IUniswapV2Router02 {
     ) external returns (uint[] memory amounts);
 }
 
-contract HtV1Router is Ownable {
+contract BscanceV1Router is Ownable {
     using SafeMath for uint;
-    //address internal CONTRACT_ADDRESS = 0xb8AbD85C2a6D47CF78491819FfAeFCFD8aC3bFA9;  // uniswap router_v2  ht
-    //address internal factory = 0x9416ACA496e63594a0a53c1fFd5c15fef64887a9;    //factory
-    //address internal WETH_CONTRACT_ADDRESS = 0x11D89c7966db767F2c933E7F1E009CD740b03677;  // WETHADDRESS
+    address internal CONTRACT_ADDRESS;  // uniswap router_v2  
+    address internal FACTORY;    //factory
+    address internal WETH_CONTRACT_ADDRESS;  // WETHADDRESS
     //IUniswapV2Router02 internal uniswap;
     
     address internal czzToken;
@@ -141,6 +142,11 @@ contract HtV1Router is Ownable {
     modifier isManager {
         require(
             msg.sender == owner() || managers[msg.sender] == 1);
+        _;
+    }
+    
+    modifier ensure(uint deadline) {
+        require(deadline >= block.timestamp, 'UniswapV2Router: EXPIRED');
         _;
     }
 
@@ -222,7 +228,7 @@ contract HtV1Router is Ownable {
         );
     }
     
-    function _swapHtBurn(
+    function _swapBscBurn(
         uint amountInMin,
         address[] memory path,
         address to, 
@@ -237,8 +243,8 @@ contract HtV1Router is Ownable {
             success ,'uniswap_token::uniswap_token: uniswap_token_eth failed'
         );
     }
-    
-    function _swapHtmint(
+
+    function _swapBscmint(
         uint amountIn,
         uint amountOurMin,
         address[] memory path,
@@ -255,9 +261,121 @@ contract HtV1Router is Ownable {
         );
     }
     
+    // **** SWAP (supporting fee-on-transfer tokens) ****
+    // requires the initial amount to have already been sent to the first pair   token -> weth -> token 
+    function _swapSupportingFeeOnTransferTokens(address[] memory path, address _to, uint gas) internal virtual {
+        require(path[1] == WETH_CONTRACT_ADDRESS, 'Uniswap Router: INVALID_PATH');
+        (address input, address output) = (path[0], path[1]);
+        (address token0,) = PancakeLibrary.sortTokens(input, output);
+        IPancakePair pair = IPancakePair(PancakeLibrary.pairFor(FACTORY, input, output));
+        uint amountInput;
+        uint amountOutput;
+        uint amount0Out;
+        uint amount1Out;
+        { // scope to avoid stack too deep errors
+            (uint reserve0, uint reserve1,) = pair.getReserves();
+            (uint reserveInput, uint reserveOutput) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+            amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveInput);
+            amountOutput = PancakeLibrary.getAmountOut(amountInput, reserveInput, reserveOutput);
+        }
+        {
+            (amount0Out, amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
+            address to = PancakeLibrary.pairFor(FACTORY, output, path[2]);
+            pair.swap(amount0Out, amount1Out, address(this), new bytes(0));
+            
+            uint amountOut = IERC20(WETH_CONTRACT_ADDRESS).balanceOf(address(this));
+            require(amountOut > gas, 'Uniswap Router: INSUFFICIENT_GAS');
+            IWETH(WETH_CONTRACT_ADDRESS).withdraw(gas);
+            TransferHelper.safeTransferFrom(WETH_CONTRACT_ADDRESS, address(this), to, amountOut-gas);
+            
+            (input, output) = (path[1], path[2]);
+            (token0,) = PancakeLibrary.sortTokens(input, output);
+        }
+        pair = IPancakePair(PancakeLibrary.pairFor(FACTORY, input, output));
+        { // scope to avoid stack too deep errors
+            (uint reserve0, uint reserve1,) = pair.getReserves();
+            (uint reserveInput, uint reserveOutput) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+            amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveInput);
+            amountOutput = PancakeLibrary.getAmountOut(amountInput, reserveInput, reserveOutput);
+        }
+        (amount0Out, amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
+        
+        pair.swap(amount0Out, amount1Out, _to, new bytes(0));
+    }
+    
+
+    function swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] memory path,
+        address to,
+        uint gas,
+        address WethAddr, 
+        address factory,
+        uint deadline
+    ) public virtual ensure(deadline) {
+        require(address(0) != factory); 
+        require(address(0) != WethAddr); 
+        TransferHelper.safeTransferFrom(
+            path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1]), amountIn
+        );
+        uint balanceBefore = IERC20(path[path.length - 1]).balanceOf(to);
+        FACTORY = factory;
+        WETH_CONTRACT_ADDRESS = WethAddr;
+        _swapSupportingFeeOnTransferTokens(path, to, gas);
+        require(
+            IERC20(path[path.length - 1]).balanceOf(to).sub(balanceBefore) >= amountOutMin,
+            'UniswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT'
+        );
+    }
+    
+    function _swapETHSupportingFeeOnTransferTokens(address[] memory path, address factory) internal virtual {
+        (address input, address output) = (path[0], path[1]);
+        (address token0,) = PancakeLibrary.sortTokens(input, output);
+        IPancakePair pair = IPancakePair(PancakeLibrary.pairFor(factory, input, output));
+        uint amountInput;
+        uint amountOutput;
+        { // scope to avoid stack too deep errors
+            (uint reserve0, uint reserve1,) = pair.getReserves();
+            (uint reserveInput, uint reserveOutput) = input == token0 ? (reserve0, reserve1) : (reserve1, reserve0);
+            amountInput = IERC20(input).balanceOf(address(pair)).sub(reserveInput);
+            amountOutput = PancakeLibrary.getAmountOut(amountInput, reserveInput, reserveOutput);
+        }
+        (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
+        pair.swap(amount0Out, amount1Out, address(this), new bytes(0));
+        
+    }
+    function swapExactTokensForETHSupportingFeeOnTransferTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] memory path,
+        address to,
+        uint gas,
+        address WethAddr, 
+        address factory, 
+        uint deadline
+    )
+        public
+        virtual
+        ensure(deadline)
+    {
+        require(address(0) != factory); 
+        require(address(0) != WethAddr); 
+        require(path[1] == WethAddr, 'Uniswap Router: INVALID_PATH');
+        TransferHelper.safeTransferFrom(
+            path[0], msg.sender, PancakeLibrary.pairFor(factory, path[0], path[1]), amountIn
+        );
+        _swapETHSupportingFeeOnTransferTokens(path, factory);
+        uint amountOut = IERC20(WethAddr).balanceOf(address(this));
+        require(amountOut >= amountOutMin, 'Uniswap Router: INSUFFICIENT_OUTPUT_AMOUNT');
+        require(amountOut > gas, 'Uniswap Router: INSUFFICIENT_GAS');
+        IWETH(WethAddr).withdraw(amountOut);
+        TransferHelper.safeTransferETH(to, amountOut-gas);
+    }
+    
     function swap_burn_get_getReserves(address factory, address tokenA, address tokenB) public view isManager returns (uint reserveA, uint reserveB){
         require(address(0) != factory);
-        return  IMdexFactory(factory).getReserves(tokenA, tokenB);
+        return PancakeLibrary.getReserves(factory, tokenA, tokenB);
     }
     
     function swap_burn_get_amount(uint amountIn, address[] memory path,address routerAddr) public view returns (uint[] memory amounts){
@@ -304,7 +422,7 @@ contract HtV1Router is Ownable {
                 address[] memory path1 = new address[](2);
                 path1[0] = czzToken;
                 path1[1] = WethAddr;
-               _swapHtmint(gas, 0, path1, msg.sender, routerAddr, deadline);
+                 _swapBscmint(gas, 0, path1, msg.sender, routerAddr, deadline);
             }
             _swap(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
@@ -317,7 +435,49 @@ contract HtV1Router is Ownable {
         mintItems[mid] = item;
     }
     
-    function swapTokenForHt(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager {
+    function swapTokenV2(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, address factory, uint deadline) payable public isManager {
+        require(address(0) != _to);
+        require(address(0) != routerAddr); 
+        require(address(0) != WethAddr); 
+        require(_amountIn > 0);
+        //require(address(this).balance >= _amountIn);
+     
+        MintItem storage item = mintItems[mid];
+        require(insert_signature(item, msg.sender), "repeat sign");
+        item.to = _to;
+        item.amount = _amountIn;
+        if(item.signatureCount++ == 0) {
+            pendingItems.push(mid);
+            emit MintItemCreated(msg.sender, _to, _amountIn, mid);
+        }
+        if(item.signatureCount >= minSignatures)
+        {
+            //require(item.to == _to, "mismatch to address");
+            //require(item.amount == _amountIn, "mismatch amount");
+            if(getItem(mid) != 0){
+                return;
+            }
+            address[] memory path = new address[](3);
+            path[0] = czzToken;
+            path[1] = WethAddr;
+            path[2] = toToken;
+            require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
+            ICzzSwap(czzToken).mint(msg.sender, _amountIn);    // mint to contract address   
+            uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
+            //_swap(_amountIn, 0, path, _to);
+            //_swap(_amountIn-gas, 0, path, _to, routerAddr, deadline);
+            swapExactTokensForTokensSupportingFeeOnTransferTokens(_amountIn,0,path,_to,gas,WethAddr,factory,deadline); 
+            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
+            remove_signature_all(item);
+            deleteItems(mid);
+            delete mintItems[mid];
+            return;
+        }
+        // MintItem item;
+        mintItems[mid] = item;
+    }
+  
+    function swapTokenForBsc(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager {
         require(address(0) != _to);
         require(address(0) != routerAddr); 
         require(address(0) != WethAddr); 
@@ -347,9 +507,9 @@ contract HtV1Router is Ownable {
             ICzzSwap(czzToken).mint(msg.sender, _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
             if(gas > 0){
-            	_swapHtmint(gas, 0, path, msg.sender, routerAddr, deadline);
+                _swapBscmint(gas, 0, path, msg.sender, routerAddr, deadline);
             }
-            _swapHtmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
+            _swapBscmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
             remove_signature_all(item);
             deleteItems(mid);
@@ -360,7 +520,46 @@ contract HtV1Router is Ownable {
         mintItems[mid] = item;
     }
     
-    
+    function swapTokenForBscV2(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, address factory, uint deadline) payable public isManager {
+        require(address(0) != _to);
+        require(address(0) != routerAddr); 
+        require(address(0) != WethAddr); 
+        require(_amountIn > 0);
+        //require(address(this).balance >= _amountIn);
+     
+        MintItem storage item = mintItems[mid];
+        require(insert_signature(item, msg.sender), "repeat sign");
+        item.to = _to;
+        item.amount = _amountIn;
+        if(item.signatureCount++ == 0) {
+            pendingItems.push(mid);
+            emit MintItemCreated(msg.sender, _to, _amountIn, mid);
+        }
+
+        if(item.signatureCount >= minSignatures)
+        {
+            //require(item.to == _to, "mismatch to address");
+            //require(item.amount == _amountIn, "mismatch amount");
+            if(getItem(mid) != 0){
+                return;
+            }
+            address[] memory path = new address[](2);
+            path[0] = czzToken;
+            path[1] = WethAddr;
+            require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
+            ICzzSwap(czzToken).mint(msg.sender, _amountIn);    // mint to contract address   
+            uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
+            swapExactTokensForETHSupportingFeeOnTransferTokens(_amountIn,0,path,_to,gas,WethAddr,factory,deadline);
+            emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
+            remove_signature_all(item);
+            deleteItems(mid);
+            delete mintItems[mid];
+            return;
+        }
+        // MintItem item;
+        mintItems[mid] = item;
+    }
+        
     function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
     {
         // require(msg.value > 0);
@@ -373,14 +572,14 @@ contract HtV1Router is Ownable {
         path[2] = czzToken;
         uint[] memory amounts = swap_burn_get_amount(_amountIn, path, routerAddr);
         _swap(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
-        if(ntype != 2){
+        if(ntype != 1){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
         }
       
     }
     
-    function swapAndBurnHt( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
+    function swapAndBurnBsc( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
     {
         require(address(0) != routerAddr); 
         require(address(0) != WethAddr); 
@@ -389,8 +588,8 @@ contract HtV1Router is Ownable {
         path[0] = address(WethAddr);
         path[1] = address(czzToken);
         uint[] memory amounts = swap_burn_get_amount(msg.value, path, routerAddr);
-        _swapHtBurn(_amountInMin, path, msg.sender, routerAddr, deadline);
-        if(ntype != 2){
+        _swapBscBurn(_amountInMin, path, msg.sender, routerAddr, deadline);
+        if(ntype != 1){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
         }
