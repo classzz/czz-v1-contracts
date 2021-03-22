@@ -85,7 +85,7 @@ interface IUniswapV2Router02 {
 }
 
 contract BscanceV1Router is Ownable {
-    using SafeMath for uint;
+    //using SafeMath for uint;
     //address internal CONTRACT_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;  // uniswap router_v2
     //address internal WETH_CONTRACT_ADDRESS = 0xc778417E063141139Fce010982780140Aa0cD5Ab;  // WETHADDRESS
     //IUniswapV2Router02 internal uniswap;
