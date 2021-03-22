@@ -86,7 +86,7 @@ interface IUniswapV2Router02 {
 }
 
 contract HtV1Router is Ownable {
-    using SafeMath for uint;
+    //using SafeMath for uint;
     //address internal CONTRACT_ADDRESS = 0xb8AbD85C2a6D47CF78491819FfAeFCFD8aC3bFA9;  // uniswap router_v2  ht
     //address internal factory = 0x9416ACA496e63594a0a53c1fFd5c15fef64887a9;    //factory
     //address internal WETH_CONTRACT_ADDRESS = 0x11D89c7966db767F2c933E7F1E009CD740b03677;  // WETHADDRESS

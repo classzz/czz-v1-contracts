@@ -1,6 +1,6 @@
 pragma solidity =0.6.6;
 
-import './SafeMath.sol';
+//import './SafeMath.sol';
 import './IERC20.sol';
 import './IMdexFactory.sol';
 import "./IMdexPair.sol";
@@ -95,7 +95,7 @@ interface IWHT {
 }
 
 contract HtV1Router is Ownable {
-    using SafeMath for uint;
+    //using SafeMath for uint;
     address internal CONTRACT_ADDRESS;  // uniswap router_v2  ht
     address internal FACTORY;    //factory
     address internal WETH_CONTRACT_ADDRESS;  // WETHADDRESS
