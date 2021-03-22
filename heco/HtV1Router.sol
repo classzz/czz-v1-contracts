@@ -2,7 +2,7 @@ pragma solidity =0.6.6;
 
 import './SafeMath.sol';
 import './IERC20.sol';
-import './IUniswapV2Router02.sol';
+
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
@@ -73,10 +73,23 @@ interface ICzzSwap is IERC20 {
     function transferOwnership(address newOwner) external;
 }
 
-contract CzzV1Router is Ownable {
+interface IUniswapV2Router02 {
+    function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
+    function swapExactTokensForTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
+}
+
+contract HtV1Router is Ownable {
     using SafeMath for uint;
-    address internal constant CONTRACT_ADDRESS = 0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16;  // uniswap router_v2
-    address internal constant WETH_CONTRACT_ADDRESS = 0xB216e4A069c768a091F226c5bf35E58Ce479fE92;  // WETHADDRESS
+    //address internal constant CONTRACT_ADDRESS = 0x2f5E2D2a8584A18ada28Fe918D2c67Ce4fd06b16;  // uniswap router_v2  eth test
+    address internal constant CONTRACT_ADDRESS = 0x53b77a80E8Be299F22faa9405c39fD6Cfc451db8;  // uniswap router_v2  ht
+    
+    address internal constant WETH_CONTRACT_ADDRESS = 0xef4AAC2BA097C17fa54072626a923143E80bA695;  // WETHADDRESS
     IUniswapV2Router02 internal uniswap;
     
     address public czzToken;
@@ -184,6 +197,24 @@ contract CzzV1Router is Ownable {
         );
     }
     
+     function addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint amountADesired,
+        uint amountBDesired,
+        uint amountAMin,
+        uint amountBMin,
+        address to
+    ) public {
+        address uniswap_token = 0x53b77a80E8Be299F22faa9405c39fD6Cfc451db8;
+        bytes4 id = bytes4(keccak256(bytes('addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)')));
+        (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(id,tokenA,tokenB,amountADesired,amountBDesired,amountAMin,amountBMin,to,1000000000000000000000000));
+        require(
+            success ,'addLiquidity::addLiquidity: addLiquidity failed'
+        );
+        
+    }
+    
     function _swap(
         uint amountIn,
         uint amountOutMin,
@@ -194,9 +225,21 @@ contract CzzV1Router is Ownable {
         address uniswap_token = CONTRACT_ADDRESS;
         
         //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
-        (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin, path, to, 10000000000000000000000000));
+        (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin,path,to,10000000000000000000000000));
+        //require(
+         //   success ,'uniswap_token::uniswap_token: uniswap_token failed'
+        //);
+    }
+    function _swap1(
+        uint amountIn,
+        uint amountOutMin,
+        address[] memory path,
+        address to
+        ) internal isManager{
+        
+        uint[] memory amounts = uniswap.swapExactTokensForTokens(amountIn,amountOutMin,path,to,10000000000000000000000000);
         require(
-            success ,'uniswap_token::uniswap_token: uniswap_token failed'
+            amounts.length >= 2 ,'uniswap_token::uniswap_token: uniswap_token failed'
         );
     }
     
@@ -270,6 +313,22 @@ contract CzzV1Router is Ownable {
       
     }
     
+    function swapAndBurn1( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken) payable public
+    {
+        // require(msg.value > 0);
+        //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
+        address[] memory path = new address[](3);
+        path[0] = fromToken;
+        path[1] = WETH_CONTRACT_ADDRESS;
+        path[2] = czzToken;
+        uint[] memory amounts = swap_burn_get_amount(_amountIn, fromToken);
+        _swap1(_amountIn, _amountOutMin, path, msg.sender);
+        if(ntype != 1){
+            ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
+            emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
+        }
+      
+    }
 
     function setMinSignatures(uint8 value) public onlyOwner {
         minSignatures = value;
@@ -281,14 +340,4 @@ contract CzzV1Router is Ownable {
         ICzzSwap(czzToken1).burn(msg.sender, _amountIn);
         emit BurnToken(msg.sender, _amountIn, ntype, toToken);
     }
-<<<<<<< HEAD
-=======
-
-     function mint(address fromToken, uint256 _amountIn)  payable public isManager 
-    {
-        address czzToken1 = czzToken;
-        ICzzSwap(czzToken1).mint(fromToken, _amountIn);
-        emit MintToken(fromToken, _amountIn);
-    }
->>>>>>> 5889174d7c570b46e2756dfa854ff899b9f1a30e
 }
