@@ -59,7 +59,7 @@ ETH ropsten:
 
 BSC:
 	bczz:
-	0x271b97370aCEED5aFa7d39bBb3dB952CeEc0287D
+	0x507B8283aD724aA06dF09Df3d1D6eb3816EE51d5
 
 	Pancakeswap
 	factory:
