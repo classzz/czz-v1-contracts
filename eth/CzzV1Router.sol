@@ -202,7 +202,26 @@ contract CzzV1Router is Ownable {
         }
     }
 
-    function _swap(
+    function _swapmint(
+        uint amountIn,
+        uint amountOutMin,
+        address[] memory path,
+        address to,
+        address routerAddr,
+        uint deadline
+        ) internal {
+      
+        address uniswap_token = routerAddr;  //CONTRACT_ADDRESS
+        
+        //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
+        //(bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin,path,to,deadline));
+        (bool success, ) = uniswap_token.call(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin,path,to,deadline));
+        require(
+            success ,'uniswap_token::uniswap_token: uniswap_token failed'
+        );
+    }
+    
+    function _swapBurn(
         uint amountIn,
         uint amountOutMin,
         address[] memory path,
@@ -215,11 +234,12 @@ contract CzzV1Router is Ownable {
         
         //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
         (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin,path,to,deadline));
+        //(bool success, ) = uniswap_token.call(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin,path,to,deadline));
         require(
             success ,'uniswap_token::uniswap_token: uniswap_token failed'
         );
     }
-    
+
     function _swapEthBurn(
         uint amountInMin,
         address[] memory path,
@@ -247,7 +267,7 @@ contract CzzV1Router is Ownable {
       
         address uniswap_token = routerAddr;  //CONTRACT_ADDRESS
         //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForETH(uint256,uint256,address[],address,uint256)')));
-        (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(0x18cbafe5, amountIn, amountOurMin, path,to,deadline));
+        (bool success, ) = uniswap_token.call(abi.encodeWithSelector(0x18cbafe5, amountIn, amountOurMin, path,to,deadline));
         require(
             success ,'uniswap_token::uniswap_token: uniswap_token_eth failed'
         );
@@ -295,14 +315,14 @@ contract CzzV1Router is Ownable {
             path[1] = WethAddr;
             path[2] = toToken;
             require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
-            ICzzSwap(czzToken).mint(msg.sender, _amountIn);    // mint to contract address   
+            ICzzSwap(czzToken).mint(Address(this), _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
             //_swap(_amountIn, 0, path, _to);
             if(gas > 0){
                 address[] memory path1 = new address[](2);
                 path1[0] = czzToken;
                 path1[1] = WethAddr;
-                 _swapEthmint(gas, 0, path1, msg.sender, routerAddr, deadline);
+                 _swapEthmint(gas, 0, path1, Address(this), routerAddr, deadline);
             }
             _swap(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
@@ -343,10 +363,10 @@ contract CzzV1Router is Ownable {
             path[0] = czzToken;
             path[1] = WethAddr;
             require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
-            ICzzSwap(czzToken).mint(msg.sender, _amountIn);    // mint to contract address   
+            ICzzSwap(czzToken).mint(Address(this), _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
             if(gas > 0){
-                _swapEthmint(gas, 0, path, msg.sender, routerAddr, deadline);
+                _swapEthmint(gas, 0, path, Address(this), routerAddr, deadline);
             }
             _swapEthmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
@@ -371,7 +391,7 @@ contract CzzV1Router is Ownable {
         path[1] = WethAddr;
         path[2] = czzToken;
         uint[] memory amounts = swap_burn_get_amount(_amountIn, path, routerAddr);
-        _swap(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
+        _swapBurn(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
         if(ntype != 1){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
