@@ -315,14 +315,14 @@ contract CzzV1Router is Ownable {
             path[1] = WethAddr;
             path[2] = toToken;
             require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
-            ICzzSwap(czzToken).mint(Address(this), _amountIn);    // mint to contract address   
+            ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
             //_swap(_amountIn, 0, path, _to);
             if(gas > 0){
                 address[] memory path1 = new address[](2);
                 path1[0] = czzToken;
                 path1[1] = WethAddr;
-                 _swapEthmint(gas, 0, path1, Address(this), routerAddr, deadline);
+                 _swapEthmint(gas, 0, path1, address(this), routerAddr, deadline);
             }
             _swapmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
@@ -363,10 +363,10 @@ contract CzzV1Router is Ownable {
             path[0] = czzToken;
             path[1] = WethAddr;
             require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
-            ICzzSwap(czzToken).mint(Address(this), _amountIn);    // mint to contract address   
+            ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
             if(gas > 0){
-                _swapEthmint(gas, 0, path, Address(this), routerAddr, deadline);
+                _swapEthmint(gas, 0, path, address(this), routerAddr, deadline);
             }
             _swapEthmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
