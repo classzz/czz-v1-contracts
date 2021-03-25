@@ -324,7 +324,7 @@ contract CzzV1Router is Ownable {
                 path1[1] = WethAddr;
                  _swapEthmint(gas, 0, path1, Address(this), routerAddr, deadline);
             }
-            _swap(_amountIn-gas, 0, path, _to, routerAddr, deadline);
+            _swapmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
             remove_signature_all(item);
             deleteItems(mid);
