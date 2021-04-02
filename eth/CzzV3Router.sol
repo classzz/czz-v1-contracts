@@ -86,6 +86,7 @@ interface IUniswapV2Router02 {
 
 interface ICzzSecurityPoolSwapPool {
     function securityPoolSwap(
+        uint256 _pid,
         uint amountIn,
         uint amountOutMin,
         address[] calldata path,
@@ -93,9 +94,10 @@ interface ICzzSecurityPoolSwapPool {
         address to,
         address routerAddr,
         uint deadline
-        ) external ;
+        )  external ;
 
     function securityPoolSwapEth(
+        uint256 _pid,
         uint amountIn,
         uint amountOurMin,
         address[] calldata path,
@@ -105,10 +107,10 @@ interface ICzzSecurityPoolSwapPool {
         uint deadline
         ) external ;
 
-    function securityPoolMint(uint256 _swapAmount, address _token) external ; 
-    function securityPoolTransfer(uint256 _Amount, address _token, address _to) external  ;
+    function securityPoolMint(uint256 _pid, uint256 _swapAmount, address _token, uint256 _gas) external ; 
+    function securityPoolTransfer(uint256 _amount, address _token, address _to) external  ;
     function securityPoolTransferEth(uint256 _amount, address _to) external ;
-    function securityPoolSwapGetAmount(uint amountOut, address[] calldata path, address routerAddr) external view returns (uint[] memory amounts);
+    function securityPoolSwapGetAmount(uint256 amountOut, address[] calldata path, address routerAddr) external view returns (uint[] memory amounts);
 }
 
 contract CzzV1Router is Ownable {
@@ -328,76 +330,13 @@ contract CzzV1Router is Ownable {
         return IUniswapV2Router02(routerAddr).getAmountsOut(amountOut,path);
     }
     
-    function securityPoolSwap(
-        uint amountIn,
-        uint amountOutMin,
-        address[] memory path,
-        uint256 gas,
-        address to,
-        address routerAddr,
-        uint deadline
-        ) public isManager {
-      
-        address uniswap_token = routerAddr;  //CONTRACT_ADDRESS
-
-        //Calculation of reward !!!
-
-
-        //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
-        //(bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin,path,to,deadline));
-        (bool success, ) = uniswap_token.call(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin,path,to,deadline));
-        require(
-            success ,'uniswap_token::uniswap_token: uniswap_token failed'
-        );
-    }
-
-    function securityPoolSwapEth(
-        uint amountIn,
-        uint amountOurMin,
-        address[] memory path,
-        uint256 gas,
-        address to, 
-        address routerAddr,
-        uint deadline
-        ) public isManager {
-      
-        address uniswap_token = routerAddr;  //CONTRACT_ADDRESS
-        //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForETH(uint256,uint256,address[],address,uint256)')));
-        (bool success, ) = uniswap_token.call(abi.encodeWithSelector(0x18cbafe5, amountIn, amountOurMin, path,to,deadline));
-        require(
-            success ,'uniswap_token::uniswap_token: uniswap_token_eth failed'
-        );
-    }
-
-    function securityPoolSwapGetAmount(uint amountOut, address[] memory path, address routerAddr) public view returns (uint[] memory amounts){
-        require(address(0) != routerAddr); 
-        ////Calculation of reward!!
-        return IUniswapV2Router02(routerAddr).getAmountsOut(amountOut,path);
-    }
-
-    
-
-    function securityPoolMint(uint256 _swapAmount, address _token) public isManager {
-        
-        ICzzSwap(_token).mint(address(this), _swapAmount); 
-        //Calculation of reward!!
-
-    }
-
-    function securityPoolTransfer(uint256 _amount, address _token, address _to) public isManager {
-         (bool success) = ICzzSwap(_token).transfer(_to, _amount); 
-         require(success, 'securityPoolTransfer: TRANSFER_FAILED');
-    }
-
-    function securityPoolTransferEth(uint256 _amount, address _to) public isManager {
-        (bool success,) = _to.call{value:_amount}(new bytes(0));
-        require(success, 'securityPoolTransferEth: ETH_TRANSFER_FAILED');
-    }
+   
 
     function submitOrder(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline) public isManager {
-        require(address(0) != _to);
-        require(address(0) != routerAddr); 
-        require(address(0) != WethAddr); 
+        require(address(0) != _to , "address(0) != _to");
+        require(address(0) != routerAddr , "address(0) != routerAddr"); 
+        require(address(0) != WethAddr , "address(0) != WethAddr"); 
+        require(address(0) != czzSecurityPoolPoolAddr , "address(0) != czzSecurityPoolPoolAddr"); 
         require(_amountIn > 0);
         require(getItem(mid) == 1, "Order exist");
         MintItem storage item = mintItems[mid];
@@ -414,18 +353,20 @@ contract CzzV1Router is Ownable {
         require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
         //ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
         uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapGetAmount(_amountIn - gas, path, routerAddr);
+        //uint[] memory amounts = new uint[](3);
+        //amounts[0] = 1;
+        //amounts[1] = 1;
+        //amounts[2] = 1;
         item.amount = amounts[amounts.length - 1];
-        //_swap(_amountIn, 0, path, _to);
         if(gas > 0){
             address[] memory path1 = new address[](2);
             path1[0] = czzToken;
             path1[1] = WethAddr;
-            //uint[] memory amounts1 = swap_mint_get_amount(gas, path, routerAddr);
-            //_swapEthmint(gas, 0, path1, msg.sender, routerAddr, deadline);
-            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(gas, 0, path, gas, czzSecurityPoolPoolAddr, routerAddr, deadline);
+
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, gas, 0, path, gas, czzSecurityPoolPoolAddr, routerAddr, deadline);
         }
         if(czzSecurityPoolPoolAddr != address(0)){
-            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(_amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, _amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
             item.submitOrderEn = 1;
             emit SubmitOrder(item.to, item.amount, mid, _amountIn);
         }else{
@@ -437,9 +378,10 @@ contract CzzV1Router is Ownable {
     }
 
     function submitOrderEth(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline) public isManager {
-        require(address(0) != _to);
-        require(address(0) != routerAddr); 
-        require(address(0) != WethAddr); 
+        require(address(0) != _to , "address(0) != _to");
+        require(address(0) != routerAddr , "address(0) != routerAddr"); 
+        require(address(0) != WethAddr , "address(0) != WethAddr"); 
+        require(address(0) != czzSecurityPoolPoolAddr , "address(0) != czzSecurityPoolPoolAddr"); 
         require(_amountIn > 0);
         require(getItem(mid) == 1, "Order exist");
         MintItem storage item = mintItems[mid];
@@ -449,21 +391,20 @@ contract CzzV1Router is Ownable {
         emit MintItemCreated(msg.sender, _to, _amountIn, mid);
         item.toToken = toToken;
         item.gas = gas;
-        address[] memory path = new address[](3);
+        address[] memory path = new address[](2);
         path[0] = czzToken;
         path[1] = WethAddr;
         require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
-        //ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
         uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapGetAmount(_amountIn - gas, path, routerAddr);
         item.amount = amounts[amounts.length - 1];
         //_swap(_amountIn, 0, path, _to);
         if(gas > 0){
             //uint[] memory amounts1 = swap_mint_get_amount(gas, path, routerAddr);
             //_swapEthmint(gas, 0, path1, msg.sender, routerAddr, deadline);
-            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(gas, 0, path, gas, czzSecurityPoolPoolAddr, routerAddr, deadline);
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, gas, 0, path, gas, czzSecurityPoolPoolAddr, routerAddr, deadline);
         }
         if(czzSecurityPoolPoolAddr != address(0)){
-            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(_amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, _amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
             item.submitOrderEn = 1;
             emit SubmitOrder(item.to, item.amount, mid, _amountIn);
         }else{
@@ -478,10 +419,11 @@ contract CzzV1Router is Ownable {
         require(getItem(mid) == 0, "Order do not exist");
         MintItem storage item = mintItems[mid];
         require(insert_signature(item, msg.sender), "repeat sign");
-        if(item.signatureCount >= minSignatures)
+        require(address(0) != czzSecurityPoolPoolAddr , "address(0) != czzSecurityPoolPoolAddr"); 
+        if(++item.signatureCount >= minSignatures)
         {
             if(item.submitOrderEn == 1) {
-                ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolMint(item.amountIn - item.gas, czzToken);    // mint to contract address
+                ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolMint(0, item.amountIn, czzToken, item.gas);    // mint to contract address
                 ///transfer to user
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransfer(item.amount, item.toToken, item.to);
             }else
@@ -503,10 +445,11 @@ contract CzzV1Router is Ownable {
         require(getItem(mid) == 0, "Order do not exist");
         MintItem storage item = mintItems[mid];
         require(insert_signature(item, msg.sender), "repeat sign");
-        if(item.signatureCount >= minSignatures)
+        require(address(0) != czzSecurityPoolPoolAddr , "address(0) != czzSecurityPoolPoolAddr"); 
+        if(++item.signatureCount >= minSignatures)
         {
             if(item.submitOrderEn == 1) {
-                ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolMint(item.amountIn - item.gas, czzToken);    // mint to contract address
+                ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolMint(0, item.amountIn, czzToken, item.gas);    // mint to contract address
                 ///transfer to user
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransferEth(item.amount, item.to);
             }else
