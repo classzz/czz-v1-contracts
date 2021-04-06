@@ -256,7 +256,7 @@ contract HtV1Router is Ownable {
         );
     }
     
-    function _swapHtmint(
+    function _swapHtMint(
         uint amountIn,
         uint amountOurMin,
         address[] memory path,
@@ -434,7 +434,7 @@ contract HtV1Router is Ownable {
                 address[] memory path1 = new address[](2);
                 path1[0] = czzToken;
                 path1[1] = WethAddr;
-               _swapHtmint(gas, 0, path1, msg.sender, routerAddr, deadline);
+               _swapHtMint(gas, 0, path1, msg.sender, routerAddr, deadline);
             }
             _swap(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
@@ -519,9 +519,9 @@ contract HtV1Router is Ownable {
             ICzzSwap(czzToken).mint(msg.sender, _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
             if(gas > 0){
-            	_swapHtmint(gas, 0, path, msg.sender, routerAddr, deadline);
+            	_swapHtMint(gas, 0, path, msg.sender, routerAddr, deadline);
             }
-            _swapHtmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
+            _swapHtMint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
             deleteItems(mid);
             delete mintItems[mid];

@@ -298,7 +298,7 @@ contract CzzV1Router is Ownable {
         );
     }
 
-    function _swapEthmint(
+    function _swapEthMint(
         uint amountIn,
         uint amountOurMin,
         address[] memory path,
@@ -400,7 +400,7 @@ contract CzzV1Router is Ownable {
         //_swap(_amountIn, 0, path, _to);
         if(gas > 0){
             //uint[] memory amounts1 = swap_mint_get_amount(gas, path, routerAddr);
-            //_swapEthmint(gas, 0, path1, msg.sender, routerAddr, deadline);
+            //_swapEthMint(gas, 0, path1, msg.sender, routerAddr, deadline);
             ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, gas, 0, path, gas, czzSecurityPoolPoolAddr, routerAddr, deadline);
         }
         if(czzSecurityPoolPoolAddr != address(0)){
@@ -502,7 +502,7 @@ contract CzzV1Router is Ownable {
                 address[] memory path1 = new address[](2);
                 path1[0] = czzToken;
                 path1[1] = WethAddr;
-                 _swapEthmint(gas, 0, path1, msg.sender, routerAddr, deadline);
+                 _swapEthMint(gas, 0, path1, msg.sender, routerAddr, deadline);
             }
             _swapMint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
@@ -546,9 +546,9 @@ contract CzzV1Router is Ownable {
             ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
             if(gas > 0){
-                _swapEthmint(gas, 0, path, msg.sender, routerAddr, deadline);
+                _swapEthMint(gas, 0, path, msg.sender, routerAddr, deadline);
             }
-            _swapEthmint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
+            _swapEthMint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
             remove_signature_all(item);
             deleteItems(mid);
