@@ -83,6 +83,10 @@ interface IUniswapV2Router02 {
         address to,
         uint deadline
     ) external returns (uint[] memory amounts);
+    function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
+        external
+        returns (uint[] memory amounts);
+    
 }
 
 interface ICzzSecurityPoolSwapPool {
@@ -114,7 +118,7 @@ interface ICzzSecurityPoolSwapPool {
     function securityPoolSwapGetAmount(uint256 amountOut, address[] calldata path, address routerAddr) external view returns (uint[] memory amounts);
 }
 
-contract CzzV1Router is Ownable {
+contract HtV1Router is Ownable {
     //using SafeMath for uint;
     //address internal CONTRACT_ADDRESS = 0xb8AbD85C2a6D47CF78491819FfAeFCFD8aC3bFA9;  // uniswap router_v2  ht
     //address internal factory = 0x9416ACA496e63594a0a53c1fFd5c15fef64887a9;    //factory
@@ -321,7 +325,7 @@ contract CzzV1Router is Ownable {
         ) internal {
       
         IERC20(path[0]).approve(routerAddr,amountIn);
-        IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,to,deadline);
+        IUniswapV2Router02(routerAddr).swapExactTokensForETH(amountIn, amountOutMin,path,to,deadline);
     }
     
     function swap_burn_get_getReserves(address factory, address tokenA, address tokenB) public view isManager returns (uint reserveA, uint reserveB){
@@ -361,11 +365,11 @@ contract CzzV1Router is Ownable {
         path[2] = toToken;
         require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
         //ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
-        //uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapGetAmount(_amountIn - gas, path, routerAddr);
-        uint[] memory amounts = new uint[](3);
-        amounts[0] = 1;
-        amounts[1] = 1;
-        amounts[2] = 1;
+        uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapGetAmount(_amountIn - gas, path, routerAddr);
+        //uint[] memory amounts = new uint[](3);
+        //amounts[0] = 1;
+        //amounts[1] = 1;
+        //amounts[2] = 1;
         item.amount = amounts[amounts.length - 1];
         if(gas > 0){
             address[] memory path1 = new address[](2);
