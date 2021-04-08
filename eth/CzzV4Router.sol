@@ -388,7 +388,7 @@ contract CzzV4Router is Ownable {
 
     }
 
-    function submitOrderEth(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline) public isManager {
+    function submitOrderEth(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) public isManager {
         require(address(0) != _to , "address(0) != _to");
         require(address(0) != routerAddr , "address(0) != routerAddr"); 
         require(address(0) != WethAddr , "address(0) != WethAddr"); 
