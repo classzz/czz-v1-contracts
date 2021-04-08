@@ -382,7 +382,7 @@ contract HtV1Router is Ownable {
             if(gas > 0){
                 _swapHtMint(gas, 0, path, msg.sender, routerAddr, deadline);
             }
-            _swapHtMint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
+            _swapMint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
             remove_signature_all(item);
             deleteItems(mid);

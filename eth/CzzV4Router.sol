@@ -113,11 +113,11 @@ interface ICzzSecurityPoolSwapPool {
 
     function securityPoolMint(uint256 _pid, uint256 _swapAmount, address _token, uint256 _gas) external ; 
     function securityPoolTransfer(uint256 _amount, address _token, address _to) external  ;
-    function securityPoolTransferEth(uint256 _amount, address _to) external ;
+    function securityPoolTransferEth(address _WETH, uint256 _amount, address _to) external ;
     function securityPoolSwapGetAmount(uint256 amountOut, address[] calldata path, address routerAddr) external view returns (uint[] memory amounts);
 }
 
-contract CzzV1Router is Ownable {
+contract CzzV4Router is Ownable {
     //using SafeMath for uint;
     //address internal CONTRACT_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;  // uniswap router_v2
     //address internal WETH_CONTRACT_ADDRESS = 0xc778417E063141139Fce010982780140Aa0cD5Ab;  // WETHADDRESS
@@ -186,9 +186,9 @@ contract CzzV1Router is Ownable {
         _;
     }
 
-    constructor(address _token) public {
+    constructor(address _token, address _czzSecurityPoolPoolAddr) public {
         czzToken = _token;
-       // czzSecurityPoolPoolAddr = _pool;
+        czzSecurityPoolPoolAddr = _czzSecurityPoolPoolAddr;
         minSignatures = MIN_SIGNATURES;
     }
     
@@ -278,7 +278,6 @@ contract CzzV1Router is Ownable {
             success ,'uniswap_token::uniswap_token: uniswap_token failed'
         );
     }
-
     
     function _swapBurn(
         uint amountIn,
@@ -375,7 +374,7 @@ contract CzzV1Router is Ownable {
             path1[0] = czzToken;
             path1[1] = WethAddr;
 
-            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, gas, 0, path, gas, czzSecurityPoolPoolAddr, routerAddr, deadline);
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, gas, 0, path1, gas, msg.sender, routerAddr, deadline);
         }
         if(czzSecurityPoolPoolAddr != address(0)){
             ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, _amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
@@ -401,7 +400,7 @@ contract CzzV1Router is Ownable {
         item.amountIn = _amountIn;
         pendingItems.push(mid);
         emit MintItemCreated(msg.sender, _to, _amountIn, mid);
-        item.toToken = toToken;
+        item.toToken = WethAddr;
         item.gas = gas;
         address[] memory path = new address[](2);
         path[0] = czzToken;
@@ -413,10 +412,10 @@ contract CzzV1Router is Ownable {
         if(gas > 0){
             //uint[] memory amounts1 = swap_mint_get_amount(gas, path, routerAddr);
             //_swapEthMint(gas, 0, path1, msg.sender, routerAddr, deadline);
-            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, gas, 0, path, gas, czzSecurityPoolPoolAddr, routerAddr, deadline);
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, gas, 0, path, gas, msg.sender, routerAddr, deadline);
         }
         if(czzSecurityPoolPoolAddr != address(0)){
-            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, _amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, _amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
             item.submitOrderEn = 1;
             emit SubmitOrder(item.to, item.amount, mid, _amountIn);
         }else{
@@ -463,7 +462,8 @@ contract CzzV1Router is Ownable {
             if(item.submitOrderEn == 1) {
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolMint(0, item.amountIn, czzToken, item.gas);    // mint to contract address
                 ///transfer to user
-                ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransferEth(item.amount, item.to);
+                //ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransferHt(item.Weth, item.amount, item.to);
+                ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransfer(item.amount, item.toToken, item.to);
             }else
             {
                 emit MintToken(item.to, 0, mid, 0);
@@ -560,7 +560,7 @@ contract CzzV1Router is Ownable {
             if(gas > 0){
                 _swapEthMint(gas, 0, path, msg.sender, routerAddr, deadline);
             }
-            _swapEthMint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
+            _swapMint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
             remove_signature_all(item);
             deleteItems(mid);
@@ -660,6 +660,10 @@ contract CzzV1Router is Ownable {
 
     function getCzzSecurityPoolPoolAddress() public view isManager returns(address ){
         return czzSecurityPoolPoolAddr;
+    }
+    
+    function getBalanceOf(address token, address account) public view isManager returns(uint256 ){
+        return ICzzSwap(token).balanceOf(account);
     }
     
     function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public isManager
