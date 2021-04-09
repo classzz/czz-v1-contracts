@@ -1,6 +1,6 @@
 # czz-v1-contracts
 
-v1.6
+v1.7
 
 1.contract address
 heco(test-net)：
@@ -28,6 +28,12 @@ heco(test-net)：
 
     routerv1: our-contract
     0x64Dd2D13dA5469a50D747B9CE35a5EcB4865d054
+
+	routerv4:
+	0x387E2C2B6c7056df3160658471583fA6C182214E
+
+	HecoPoll:
+	0xB0d7487252B492Da2dc9132741FD6142fD61f9D3
 ```
 
 ETH ropsten:
@@ -55,6 +61,7 @@ ETH ropsten:
 
 	routerV1:
 	0x6aE86268312A815831A5cfe35187d1f3D2B6dE76
+
 ```
 
 BSC:
@@ -74,11 +81,13 @@ BSC:
 	routerv1:
 	0xb39E84c6AD0574af30fb5f0185ad2d4f2DBa4262
 
+	
+
 
 ```
 
 
-
+```
 ETH test token:
 
 WBTC 
@@ -345,4 +354,47 @@ param：
 	factory： 
 	tokenA：  
 	tokenB：   
+```
+
+
+
+2.8
+```
+submitOrder: 
+HT:
+	function submitOrder(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline)
+
+Toden address:
+	routerV4
+```
+
+
+
+2.9
+```
+submitOrderHt
+HT:
+	function submitOrderHt(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) 
+Toden address:
+	routerV4
+```
+
+
+3.0
+```
+mintAndTransfer
+HT:
+	function mintAndTransfer(uint256 mid) 
+Toden address:
+	routerV4
+```
+
+
+3.1
+```
+mintAndTransferHt
+HT:
+	function mintAndTransferHt(uint256 mid)
+Toden address:
+	routerV4
 ```

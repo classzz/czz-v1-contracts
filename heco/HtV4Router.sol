@@ -204,6 +204,14 @@ contract HtV4Router is Ownable {
         managers[manager] = 0;
     }
     
+    function approve(address token, address spender, uint256 _amount) public virtual returns (bool) {
+        require(address(token) != address(0), "approve token is the zero address");
+        require(address(spender) != address(0), "approve spender is the zero address");
+        require(_amount != 0, "approve _amount is the zero ");
+        IERC20(token).approve(spender,_amount);
+        return true;
+    }
+    
     function deleteItems(uint256 mid) internal isManager {
         uint8 replace = 0;
         for(uint i = 0; i< pendingItems.length; i++){
@@ -258,7 +266,7 @@ contract HtV4Router is Ownable {
         uint deadline
         ) internal {
 
-        IERC20(path[0]).approve(routerAddr,amountIn);
+        //IERC20(path[0]).approve(routerAddr,amountIn);
         IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,to,deadline);
 
     }
@@ -324,7 +332,7 @@ contract HtV4Router is Ownable {
         uint deadline
         ) internal {
       
-        IERC20(path[0]).approve(routerAddr,amountIn);
+        //IERC20(path[0]).approve(routerAddr,amountIn);
         IUniswapV2Router02(routerAddr).swapExactTokensForETH(amountIn, amountOutMin,path,to,deadline);
     }
     
