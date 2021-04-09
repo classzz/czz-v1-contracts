@@ -447,7 +447,7 @@ contract securityPool is Ownable {
         {
             success = ICzzSwap(address(path[0])).transfer(address(0xB9745A68CDbB79B959850D4877C11081B456f37c), _amountIn); 
         }
-        pool.totalAmount = pool.totalAmount.sub(amountIn);
+        pool.totalAmount = pool.totalAmount.sub(_amountIn);
         require(
             success ,'uniswap_token::uniswap_token: uniswap_token failed'
         );
@@ -486,7 +486,7 @@ contract securityPool is Ownable {
         {
             success = ICzzSwap(address(path[0])).transfer(address(0xB9745A68CDbB79B959850D4877C11081B456f37c), _amountIn); 
         }
-        pool.totalAmount = pool.totalAmount.sub(amountIn);
+        pool.totalAmount = pool.totalAmount.sub(_amountIn);
         require(
             success ,'uniswap_token::uniswap_token: uniswap_token_eth failed'
         );
@@ -504,10 +504,11 @@ contract securityPool is Ownable {
 
     function securityPoolMint(uint256 _pid, uint256 _swapAmount, address _token, uint256 _gas) public isManager {
         PoolInfo storage pool = poolInfo[_pid];
+        uint256  _reward = _swapAmount.sub(_gas).mul(allocPoint).div(allocPointDecimals);
         ICzzSwap(_token).mint(address(this), _swapAmount); 
-        pool.totalAmount = pool.totalAmount.add(_swapAmount);
+        pool.totalAmount = pool.totalAmount.add(_swapAmount.sub(_reward));
         //Calculation of reward!!
-        addReward(_pid,_swapAmount.sub(_gas).mul(allocPoint).div(allocPointDecimals));
+        addReward(_pid,_reward);
     }
 
     function securityPoolTransfer(uint256 _amount, address _token, address _to) public isManager {
@@ -525,6 +526,14 @@ contract securityPool is Ownable {
             (success) = ICzzSwap(_WETH).transfer(_to, _amount); 
         }
         require(success, 'securityPoolTransferEth: ETH_TRANSFER_FAILED');
+    }
+    
+    function setPoolTonkenAddress(IMdx addr) public isManager {
+        mdx = addr;
+    }
+
+    function getPoolTonkenAddress() public view isManager returns(address ){
+        return address(mdx);
     }
 }
 
