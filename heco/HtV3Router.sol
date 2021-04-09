@@ -437,7 +437,7 @@ contract HtV1Router is Ownable {
       
     }
     
-    function swapAndBurnHt( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
+    function swapAndBurnEth( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
     {
         require(address(0) != routerAddr); 
         require(address(0) != WethAddr); 

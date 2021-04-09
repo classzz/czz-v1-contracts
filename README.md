@@ -30,10 +30,10 @@ heco(test-net)：
     0x64Dd2D13dA5469a50D747B9CE35a5EcB4865d054
 
 	routerv4:
-	0x387E2C2B6c7056df3160658471583fA6C182214E
+	0xbB1b884592776aB524C5C63087af735427B11EB3
 
-	HecoPoll:
-	0xB0d7487252B492Da2dc9132741FD6142fD61f9D3
+	securityPoll:
+	0xF3eC34ed7CB4Df70082320574299dB47A3A0389b
 ```
 
 ETH ropsten:
@@ -62,6 +62,9 @@ ETH ropsten:
 	routerV1:
 	0x6aE86268312A815831A5cfe35187d1f3D2B6dE76
 
+	routerV3:
+	0x6d53d74FdbbEF28418DD29637652A54409868BeC
+
 ```
 
 BSC:
@@ -80,6 +83,13 @@ BSC:
 
 	routerv1:
 	0xb39E84c6AD0574af30fb5f0185ad2d4f2DBa4262
+
+
+	routerv4:
+	0x169706a6e1a2dab659AAda358834070D02262f14
+
+	securityPoll:
+	0x0f0071f1971A5c2f51fDec5FC74821e733cD0F47
 
 	
 
@@ -259,7 +269,7 @@ swap_burn_get_amount：  get swap token rate
 	 function swap_burn_get_amount(uint amountIn, address[] memory path, address routerAddr) public view returns (uint[] memory amounts)
 	 
 contact address:
-	routerV1
+	routerV4
 
 param：
 	amountIn  swap token amount
@@ -274,7 +284,7 @@ swapAndBurn:  Token swap for hczztoken and burn hczz for cross mainnet
 	function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
 	
 contact address:
-	routerV1
+	routerV4
 
 param:
 	_amountIn: The amount of token to transfer
@@ -301,7 +311,7 @@ swapAndBurnEth: uniswap swap for eczztoken and burn eczz for cross mainnet
 
 
 Token address:
-	routerV1
+	routerV4
 
 param:
 	
@@ -340,7 +350,7 @@ swap_burn_get_getReserves: get pair reserves
 	function swap_burn_get_getReserves(address factory, address tokenA, address tokenB) public view isManager returns (uint reserveA, uint reserveB)
 
 Toden address:
-	routerV1
+	routerV4
 
 param：
 	factory： 
@@ -352,7 +362,7 @@ param：
 
 2.8
 ```
-submitOrder: 
+submitOrder:  support ht bsc
 
 	function submitOrder(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline)
 
@@ -364,7 +374,7 @@ Toden address:
 
 2.9
 ```
-submitOrderEth
+submitOrderEth：support ht bsc
 
 	function submitOrderHt(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) 
 Toden address:
@@ -374,7 +384,7 @@ Toden address:
 
 3.0
 ```
-mintAndTransfer
+mintAndTransfer：support ht bsc
 
 	function mintAndTransfer(uint256 mid) 
 Toden address:
@@ -384,9 +394,24 @@ Toden address:
 
 3.1
 ```
-mintAndTransferEth
+mintAndTransferEth：support ht bsc
 
 	function mintAndTransferHt(uint256 mid)
 Toden address:
 	routerV4
 ```
+
+
+securityPoll:
+
+1.1
+deposit:Deposit LP tokens to Pool.  _pid = 0  
+	function deposit(uint256 _pid, uint256 _amount) 
+
+2.2
+withdraw:Withdraw LP tokens from Pool.  _pid = 0  
+	function withdraw(uint256 _pid, uint256 _amount)
+
+3.3
+pending: View function to see pending on frontend.  _pid = 0  
+	function pending(uint256 _pid, address _user) external view returns 
