@@ -1,6 +1,5 @@
 pragma solidity =0.6.6;
 
-import './SafeMath.sol';
 import './IERC20.sol';
 import './IMdexFactory.sol';
 
@@ -101,7 +100,7 @@ interface ICzzSecurityPoolSwapPool {
         uint deadline
         )  external ;
 
-    function securityPoolSwapHt(
+    function securityPoolSwapEth(
         uint256 _pid,
         uint amountIn,
         uint amountOurMin,
@@ -114,16 +113,11 @@ interface ICzzSecurityPoolSwapPool {
 
     function securityPoolMint(uint256 _pid, uint256 _swapAmount, address _token, uint256 _gas) external ; 
     function securityPoolTransfer(uint256 _amount, address _token, address _to) external  ;
-    function securityPoolTransferHt(address _WETH, uint256 _amount, address _to) external ;
+    function securityPoolTransferEth(address _WETH, uint256 _amount, address _to) external ;
     function securityPoolSwapGetAmount(uint256 amountOut, address[] calldata path, address routerAddr) external view returns (uint[] memory amounts);
 }
 
 contract HtV4Router is Ownable {
-    //using SafeMath for uint;
-    //address internal CONTRACT_ADDRESS = 0xb8AbD85C2a6D47CF78491819FfAeFCFD8aC3bFA9;  // uniswap router_v2  ht
-    //address internal factory = 0x9416ACA496e63594a0a53c1fFd5c15fef64887a9;    //factory
-    //address internal WETH_CONTRACT_ADDRESS = 0x11D89c7966db767F2c933E7F1E009CD740b03677;  // WETHADDRESS
-    //IUniswapV2Router02 internal uniswap;
     
     address internal czzToken;
     address internal czzSecurityPoolPoolAddr;
@@ -306,8 +300,8 @@ contract HtV4Router is Ownable {
             success ,'uniswap_token::_swapBurn: uniswap_token failed'
         );
     }
-    
-    function _swapHtBurn(
+
+    function _swapEthBurn(
         uint amountInMin,
         address[] memory path,
         address to, 
@@ -322,8 +316,8 @@ contract HtV4Router is Ownable {
             success ,'uniswap_token::uniswap_token: uniswap_token_eth failed'
         );
     }
-    
-    function _swapHtMint(
+
+    function _swapEthMint(
         uint amountIn,
         uint amountOutMin,
         address[] memory path,
@@ -384,7 +378,7 @@ contract HtV4Router is Ownable {
             path1[0] = czzToken;
             path1[1] = WethAddr;
 
-            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapHt(0, gas, 0, path1, gas, msg.sender, routerAddr, deadline);
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, gas, 0, path1, gas, msg.sender, routerAddr, deadline);
         }
         if(czzSecurityPoolPoolAddr != address(0)){
             ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, _amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
@@ -398,7 +392,7 @@ contract HtV4Router is Ownable {
 
     }
 
-    function submitOrderHt(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) public isManager {
+    function submitOrderEth(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) public isManager {
         require(address(0) != _to , "address(0) != _to");
         require(address(0) != routerAddr , "address(0) != routerAddr"); 
         require(address(0) != WethAddr , "address(0) != WethAddr"); 
@@ -421,8 +415,8 @@ contract HtV4Router is Ownable {
         //_swap(_amountIn, 0, path, _to);
         if(gas > 0){
             //uint[] memory amounts1 = swap_mint_get_amount(gas, path, routerAddr);
-            //_swapHtMint(gas, 0, path1, msg.sender, routerAddr, deadline);
-            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapHt(0, gas, 0, path, gas, msg.sender, routerAddr, deadline);
+            //_swapEthMint(gas, 0, path1, msg.sender, routerAddr, deadline);
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, gas, 0, path, gas, msg.sender, routerAddr, deadline);
         }
         if(czzSecurityPoolPoolAddr != address(0)){
             ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, _amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
@@ -462,7 +456,7 @@ contract HtV4Router is Ownable {
         mintItems[mid] = item;
     }   
 
-    function mintAndTransferHt(uint256 mid) public isManager {
+    function mintAndTransferEth(uint256 mid) public isManager {
         require(getItem(mid) == 0, "Order do not exist");
         MintItem storage item = mintItems[mid];
         require(insert_signature(item, msg.sender), "repeat sign");
@@ -524,7 +518,7 @@ contract HtV4Router is Ownable {
                 address[] memory path1 = new address[](2);
                 path1[0] = czzToken;
                 path1[1] = WethAddr;
-                 _swapHtMint(gas, 0, path1, msg.sender, routerAddr, deadline);
+                 _swapEthMint(gas, 0, path1, msg.sender, routerAddr, deadline);
             }
             _swapMint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
@@ -538,7 +532,7 @@ contract HtV4Router is Ownable {
     }
     
     
-    function swapTokenForHt(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager {
+    function swapTokenForEth(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager {
         require(address(0) != _to);
         require(address(0) != routerAddr); 
         require(address(0) != WethAddr); 
@@ -568,7 +562,7 @@ contract HtV4Router is Ownable {
             ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
             if(gas > 0){
-                _swapHtMint(gas, 0, path, msg.sender, routerAddr, deadline);
+                _swapEthMint(gas, 0, path, msg.sender, routerAddr, deadline);
             }
             _swapMint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
@@ -640,7 +634,7 @@ contract HtV4Router is Ownable {
         path[0] = address(WethAddr);
         path[1] = address(czzToken);
         uint[] memory amounts = swap_burn_get_amount(msg.value, path, routerAddr);
-        _swapHtBurn(_amountInMin, path, msg.sender, routerAddr, deadline);
+        _swapEthBurn(_amountInMin, path, msg.sender, routerAddr, deadline);
         if(ntype != 2){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);

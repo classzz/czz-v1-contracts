@@ -1,6 +1,5 @@
 pragma solidity =0.6.6;
 
-//import './SafeMath.sol';
 import './IERC20.sol';
 
 import './UniswapV2Library.sol';
@@ -118,10 +117,6 @@ interface ICzzSecurityPoolSwapPool {
 }
 
 contract CzzV4Router is Ownable {
-    //using SafeMath for uint;
-    //address internal CONTRACT_ADDRESS = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;  // uniswap router_v2
-    //address internal WETH_CONTRACT_ADDRESS = 0xc778417E063141139Fce010982780140Aa0cD5Ab;  // WETHADDRESS
-    //IUniswapV2Router02 internal uniswap;
     
     address internal czzToken;
     address internal czzSecurityPoolPoolAddr;
@@ -202,6 +197,14 @@ contract CzzV4Router is Ownable {
         managers[manager] = 0;
     }
     
+    function approve(address token, address spender, uint256 _amount) public virtual returns (bool) {
+        require(address(token) != address(0), "approve token is the zero address");
+        require(address(spender) != address(0), "approve spender is the zero address");
+        require(_amount != 0, "approve _amount is the zero ");
+        IERC20(token).approve(spender,_amount);
+        return true;
+    }
+    
     function deleteItems(uint256 mid) internal isManager {
         uint8 replace = 0;
         for(uint i = 0; i< pendingItems.length; i++){
@@ -256,7 +259,7 @@ contract CzzV4Router is Ownable {
         uint deadline
         ) internal {
 
-        IERC20(path[0]).approve(routerAddr,amountIn);
+        //IERC20(path[0]).approve(routerAddr,amountIn);
         IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,to,deadline);
 
     }
@@ -322,8 +325,8 @@ contract CzzV4Router is Ownable {
         uint deadline
         ) internal {
       
-        IERC20(path[0]).approve(routerAddr,amountIn);
-        IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,to,deadline);
+        //IERC20(path[0]).approve(routerAddr,amountIn);
+        IUniswapV2Router02(routerAddr).swapExactTokensForETH(amountIn, amountOutMin,path,to,deadline);
     }
     
     function swap_burn_get_getReserves(address factory, address tokenA, address tokenB) public view isManager returns (uint reserveA, uint reserveB){

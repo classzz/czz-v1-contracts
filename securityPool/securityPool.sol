@@ -158,7 +158,7 @@ abstract contract Ownable is Context {
     }
 }
 
-contract HczzPool is Ownable {
+contract securityPool is Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -453,7 +453,7 @@ contract HczzPool is Ownable {
         );
     }
 
-    function securityPoolSwapHt(
+    function securityPoolSwapEth(
         uint256 _pid,
         uint amountIn,
         uint amountOutMin,
@@ -518,13 +518,13 @@ contract HczzPool is Ownable {
          require(success, 'securityPoolTransfer: TRANSFER_FAILED');
     }
 
-    function securityPoolTransferHt(address _WETH, uint256 _amount, address _to) public isManager {
+    function securityPoolTransferEth(address _WETH,uint256 _amount, address _to) public isManager {
         bool success = true;
         if(test == 0) {
             //(success,) = _to.call{value:_amount}(new bytes(0));
             (success) = ICzzSwap(_WETH).transfer(_to, _amount); 
         }
-        require(success, 'securityPoolTransferHt: ETH_TRANSFER_FAILED');
+        require(success, 'securityPoolTransferEth: ETH_TRANSFER_FAILED');
     }
 }
 

@@ -295,14 +295,9 @@ param:
 ```	
 2.4
 ```
-swapAndBurnHt:  heco swap for hczztoken and burn hczz for cross mainnet
-	function swapAndBurnHt( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
 
 swapAndBurnEth: uniswap swap for eczztoken and burn eczz for cross mainnet
 	function swapAndBurnEth( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
-
-swapAndBurnBsc: uniswap swap for bczztoken and burn eczz for cross mainnet
-	function swapAndBurnBsc( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
 
 
 Token address:
@@ -325,21 +320,18 @@ param:
 2.5
 ```
 swapToken:   
-HT: HRC20 token swap for another HRC20 token 
-ETH: ERC20 token swap for another ERC20 token 
+
+ERC20 token swap for another ERC20 token 
 	function swapToken(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager
 ```
 
 2.6
 ```
-swapTokenForHt:  HRC20 token swap for HT 
-	function swapTokenForHt(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager 
-	
+
 swapTokenForEth:  ERC20 token swap for ETH 
 	function swapTokenForETH(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadlines) payable public isManager
 
-swapTokenForBsc:  ERC20 token swap for BSC 
-	function swapTokenForBsc(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadlines) payable public isManager
+
 ```
 
 2.7
@@ -361,7 +353,7 @@ param：
 2.8
 ```
 submitOrder: 
-HT:
+
 	function submitOrder(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline)
 
 Toden address:
@@ -372,8 +364,8 @@ Toden address:
 
 2.9
 ```
-submitOrderHt
-HT:
+submitOrderEth
+
 	function submitOrderHt(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) 
 Toden address:
 	routerV4
@@ -383,7 +375,7 @@ Toden address:
 3.0
 ```
 mintAndTransfer
-HT:
+
 	function mintAndTransfer(uint256 mid) 
 Toden address:
 	routerV4
@@ -392,8 +384,8 @@ Toden address:
 
 3.1
 ```
-mintAndTransferHt
-HT:
+mintAndTransferEth
+
 	function mintAndTransferHt(uint256 mid)
 Toden address:
 	routerV4
