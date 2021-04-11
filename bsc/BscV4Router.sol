@@ -563,7 +563,7 @@ contract BscV4Router is Ownable {
             if(gas > 0){
                 _swapEthMint(gas, 0, path, msg.sender, routerAddr, deadline);
             }
-            _swapMint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
+            _swapEthMint(_amountIn-gas, 0, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
             remove_signature_all(item);
             deleteItems(mid);
@@ -594,35 +594,6 @@ contract BscV4Router is Ownable {
       
     }
     
-    function swapAndBurn_t( uint _amountIn, uint _amountOutMin, address fromToken, address toToken, address routerAddr, address WethAddr, uint deadline) payable public
-    {
-        // require(msg.value > 0);
-        //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
-        require(address(0) != routerAddr); 
-        require(address(0) != WethAddr); 
-        address[] memory path = new address[](3);
-        path[0] = fromToken;
-        path[1] = WethAddr;
-        path[2] = toToken;
-        _swapMint(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
-
-      
-    }
-    
-    function swapAndBurn_t1( uint _amountIn, uint _amountOutMin, address fromToken, address toToken, address routerAddr, address WethAddr, uint deadline) payable public
-    {
-        // require(msg.value > 0);
-        //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
-        require(address(0) != routerAddr); 
-        require(address(0) != WethAddr); 
-        address[] memory path = new address[](3);
-        path[0] = fromToken;
-        path[1] = WethAddr;
-        path[2] = toToken;
-        _swap(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
-
-      
-    }
     
     function swapAndBurnEth( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
     {
