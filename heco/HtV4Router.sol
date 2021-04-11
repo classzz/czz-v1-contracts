@@ -677,10 +677,10 @@ contract HtV4Router is Ownable {
         emit BurnToken(msg.sender, _amountIn, ntype, toToken);
     }
 
-    function mint(address fromToken, uint256 _amountIn)  payable public isManager 
+    function mint(uint256 mid, address fromToken, uint256 _amountIn)  payable public isManager 
     {
         address czzToken1 = czzToken;
         ICzzSwap(czzToken1).mint(fromToken, _amountIn);
-        emit MintToken(fromToken, 0, 0,_amountIn);
+        emit MintToken(fromToken, 0, mid,_amountIn);
     }
 }
