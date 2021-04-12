@@ -468,7 +468,7 @@ contract CzzV3Router is Ownable {
         require(path[path.length - 1] != czzToken, "path 0 is not czz"); 
         uint[] memory amounts = swap_burn_get_amount(_amountIn, path, routerAddr);
         _swapBurn(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
-        if(ntype != 2){
+        if(ntype != 1){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
         }

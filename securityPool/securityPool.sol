@@ -72,6 +72,12 @@ interface IERC20 {
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
+interface IWETH {
+    function deposit() external payable;
+    function transfer(address to, uint value) external returns (bool);
+    function withdraw(uint) external;
+}
+
 interface IMdx is IERC20 {
     function mint(address to, uint256 amount) external returns (bool);
 }
@@ -495,9 +501,8 @@ contract securityPool is Ownable {
     function securityPoolSwapGetAmount(uint256 amountOut, address[] memory path, address routerAddr) public view returns (uint[] memory amounts){
         require(address(0) != routerAddr); 
         ////Calculation of reward!!
-        uint256 _amountOut = amountOut.mul(allocPointDecimals - allocPoint).div(allocPointDecimals);
-
-        return IUniswapV2Router02(routerAddr).getAmountsOut(_amountOut,path);
+        uint256  _reward = amountOut.mul(allocPoint).div(allocPointDecimals);
+        return IUniswapV2Router02(routerAddr).getAmountsOut(amountOut.sub(_reward),path);
     }
 
     
@@ -519,11 +524,13 @@ contract securityPool is Ownable {
          require(success, 'securityPoolTransfer: TRANSFER_FAILED');
     }
 
-    function securityPoolTransferEth(address _WETH,uint256 _amount, address _to) public isManager {
+    function securityPoolTransferEth(uint256 _amount, address _WETH, address _to) public isManager {
         bool success = true;
         if(test == 0) {
+            IWETH(_WETH).withdraw(_amount);
+            TransferHelper.safeTransferETH(_to, _amount);
             //(success,) = _to.call{value:_amount}(new bytes(0));
-            (success) = ICzzSwap(_WETH).transfer(_to, _amount); 
+            //(success) = ICzzSwap(_WETH).transfer(_to, _amount); 
         }
         require(success, 'securityPoolTransferEth: ETH_TRANSFER_FAILED');
     }
@@ -931,6 +938,32 @@ library Address {
                 revert(errorMessage);
             }
         }
+    }
+}
+
+// helper methods for interacting with ERC20 tokens and sending ETH that do not consistently return true/false
+library TransferHelper {
+    function safeApprove(address token, address to, uint value) internal {
+        // bytes4(keccak256(bytes('approve(address,uint256)')));
+        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x095ea7b3, to, value));
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: APPROVE_FAILED');
+    }
+
+    function safeTransfer(address token, address to, uint value) internal {
+        // bytes4(keccak256(bytes('transfer(address,uint256)')));
+        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0xa9059cbb, to, value));
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FAILED');
+    }
+
+    function safeTransferFrom(address token, address from, address to, uint value) internal {
+        // bytes4(keccak256(bytes('transferFrom(address,address,uint256)')));
+        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x23b872dd, from, to, value));
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FROM_FAILED');
+    }
+
+    function safeTransferETH(address to, uint value) internal {
+        (bool success,) = to.call{value:value}(new bytes(0));
+        require(success, 'TransferHelper: ETH_TRANSFER_FAILED');
     }
 }
 

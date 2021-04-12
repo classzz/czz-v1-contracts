@@ -112,7 +112,7 @@ interface ICzzSecurityPoolSwapPool {
 
     function securityPoolMint(uint256 _pid, uint256 _swapAmount, address _token, uint256 _gas) external ; 
     function securityPoolTransfer(uint256 _amount, address _token, address _to) external  ;
-    function securityPoolTransferEth(address _WETH, uint256 _amount, address _to) external ;
+    function securityPoolTransferEth(uint256 _amount, address _WETH, address _to) external ;
     function securityPoolSwapGetAmount(uint256 amountOut, address[] calldata path, address routerAddr) external view returns (uint[] memory amounts);
 }
 
@@ -502,8 +502,8 @@ contract BscV4Router is Ownable {
             if(item.submitOrderEn == 1) {
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolMint(0, item.amountIn, czzToken, item.gas);    // mint to contract address
                 ///transfer to user
-                //ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransferHt(item.Weth, item.amount, item.to);
-                ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransfer(item.amount, item.toToken, item.to);
+                //ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransfer(item.amount, item.toToken, item.to);
+                ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransferEth(item.amount, item.toToken, item.to);
             }else
             {
                 emit MintToken(item.to, 0, mid, 0);
@@ -680,10 +680,10 @@ contract BscV4Router is Ownable {
         // require(msg.value > 0);
         //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
         require(address(0) != routerAddr); 
-        require(path[path.length - 1] != czzToken, "path 0 is not czz"); 
+        require(path[path.length - 1] != czzToken, "last path  is not czz"); 
         uint[] memory amounts = swap_burn_get_amount(_amountIn, path, routerAddr);
         _swapBurn(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
-        if(ntype != 2){
+        if(ntype != 3){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
         }
