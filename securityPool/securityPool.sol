@@ -459,6 +459,26 @@ contract securityPool is Ownable {
         );
     }
 
+    function securityPoolSwapCancel(
+        uint256 _pid,
+        uint amountIn,
+        uint amountOutMin,
+        address[] memory path,
+        address routerAddr,
+        uint deadline
+        ) public isManager {
+        require(address(mdx) == path[path.length - 1], "last path is not pool token address");
+        PoolInfo storage pool = poolInfo[_pid];
+        uint[] memory amounts = IUniswapV2Router02(routerAddr).getAmountsOut(amountIn,path);
+        uint256 amount = amounts[amounts.length - 1];
+
+        //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
+        //address uniswap_token = routerAddr;  //CONTRACT_ADDRESS
+        //(success, ) = uniswap_token.call(abi.encodeWithSelector(0x38ed1739, _amountIn, amountOutMin,path,to,deadline));
+        IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,address(this),deadline);
+        pool.totalAmount = pool.totalAmount.add(amount);
+    }
+
     function securityPoolSwapEth(
         uint256 _pid,
         uint amountIn,
