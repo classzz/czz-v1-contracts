@@ -410,7 +410,7 @@ contract securityPool is Ownable {
 
     function addReward(uint256 _pid, uint256 _Reward) internal isManager{
         PoolInfo storage pool = poolInfo[_pid];
-        pool.totalPendingReward = pool.totalPendingReward + _Reward;
+        pool.totalPendingReward = pool.totalPendingReward.sub(_Reward);
 
     }
 
