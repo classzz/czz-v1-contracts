@@ -88,7 +88,7 @@ interface IUniswapV2Router02 {
     
 }
 
-contract CzzV3Router is Ownable {
+contract CzzV5Router is Ownable {
     
     address internal czzToken;
     
@@ -223,25 +223,7 @@ contract CzzV3Router is Ownable {
         IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,to,deadline);
 
     }
-    
-    function _swap(
-        uint amountIn,
-        uint amountOutMin,
-        address[] memory path,
-        address to,
-        address routerAddr,
-        uint deadline
-        ) internal {
-      
-        address uniswap_token = routerAddr;  //CONTRACT_ADDRESS
-        
-        //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
-        (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin,path,to,deadline));
-        require(
-            success ,'uniswap_token::uniswap_token: uniswap_token failed'
-        );
-    }
-    
+
     function _swapBurn(
         uint amountIn,
         uint amountOutMin,
