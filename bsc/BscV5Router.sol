@@ -185,6 +185,13 @@ contract BscV4Router is Ownable {
         uint256 amountIn
     );
     
+    event OrderCancel(
+        address indexed to,
+        uint256 amount,
+        uint256 mid,
+        uint256 amountIn
+    );
+    
     modifier isManager {
         require(
             msg.sender == owner() || managers[msg.sender] == 1);
@@ -357,7 +364,7 @@ contract BscV4Router is Ownable {
    
     function orderCancel(uint256 mid) public isManager {
         require(address(0) != czzSecurityPoolPoolAddr , "address(0) != czzSecurityPoolPoolAddr"); 
-        require(getItem(mid) == 1, "Order exist");
+        require(getItem(mid) == 0, "Order do not exist");
         MintItem storage item = mintItems[mid];
         
         
@@ -366,7 +373,6 @@ contract BscV4Router is Ownable {
             path[0] = item.toToken;
             path[1] = item.wethAddr;
             path[2] = czzToken;
-            _swapBurn(item.gas, 0, path, address(this), item.routerAddr, 10000000000000000000);
             ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapCancel(0, item.amount, 0, path, item.routerAddr, 10000000000000000000);
 
         }else {
@@ -375,8 +381,23 @@ contract BscV4Router is Ownable {
             path[1] = czzToken;
             ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapCancel(0, item.amount, 0, path, item.routerAddr, 10000000000000000000);
         }
-       
+        emit OrderCancel(item.to, 0, mid, 0);
+        remove_signature_all(item);
+        deleteItems(mid);
+        delete mintItems[mid];
+    }
+    
+    function orderCancelWithPath(uint256 mid, address[] memory path) public isManager {
+        require(address(0) != czzSecurityPoolPoolAddr , "address(0) != czzSecurityPoolPoolAddr"); 
+        require(getItem(mid) == 0, "Order do not exist");
+        MintItem storage item = mintItems[mid];
         
+        
+        ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapCancel(0, item.amount, 0, path, item.routerAddr, 10000000000000000000);
+        emit OrderCancel(item.to, 0, mid, 0);
+        remove_signature_all(item);
+        deleteItems(mid);
+        delete mintItems[mid];
     }
 
     function submitOrder(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline) public isManager {
@@ -407,6 +428,12 @@ contract BscV4Router is Ownable {
         //amounts[1] = 1;
         //amounts[2] = 1;
         item.amount = amounts[amounts.length - 1];
+        if(item.gas > 0){
+            address[] memory path1 = new address[](2);
+            path1[0] = czzToken;
+            path1[1] = item.wethAddr;
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, item.gas, 0, path1, item.gas, msg.sender, item.routerAddr, 1000000000000000000000);
+        }
         if(czzSecurityPoolPoolAddr != address(0)){
             ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, _amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
             item.submitOrderEn = 1;
@@ -440,6 +467,12 @@ contract BscV4Router is Ownable {
         //ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
         uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapGetAmount(_amountIn - gas, path, routerAddr);
         item.amount = amounts[amounts.length - 1];
+        if(item.gas > 0){
+            address[] memory path1 = new address[](2);
+            path1[0] = czzToken;
+            path1[1] = item.wethAddr;
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, item.gas, 0, path1, item.gas, msg.sender, item.routerAddr, 1000000000000000000000);
+        }
         if(czzSecurityPoolPoolAddr != address(0)){
             ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, _amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
             item.submitOrderEn = 1;
@@ -475,6 +508,9 @@ contract BscV4Router is Ownable {
         uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapGetAmount(_amountIn - gas, path, routerAddr);
         item.amount = amounts[amounts.length - 1];
         //_swap(_amountIn, 0, path, _to);
+        if(item.gas > 0){
+            ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, item.gas, 0, path, item.gas, msg.sender, item.routerAddr, 1000000000000000000000);
+        }
         if(czzSecurityPoolPoolAddr != address(0)){
             ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, _amountIn - gas, 0, path, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
             item.submitOrderEn = 1;
@@ -495,21 +531,15 @@ contract BscV4Router is Ownable {
         if(++item.signatureCount >= minSignatures)
         {
             if(item.submitOrderEn == 1) {
-                if(item.gas > 0){
-                    address[] memory path1 = new address[](2);
-                    path1[0] = czzToken;
-                    path1[1] = item.wethAddr;
-                    ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, item.gas, 0, path1, item.gas, msg.sender, item.routerAddr, 1000000000000000000000);
-                }
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolMint(0, item.amountIn, czzToken, item.gas);    // mint to contract address
                 ///transfer to user
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransfer(item.amount, item.toToken, item.to);
+                emit MintToken(item.to, item.amount, mid, item.amountIn);
             }else
             {
                 emit MintToken(item.to, 0, mid, 0);
-                return;
             }
-            emit MintToken(item.to, item.amount, mid, item.amountIn);
+            
             remove_signature_all(item);
             deleteItems(mid);
             delete mintItems[mid];
@@ -527,22 +557,17 @@ contract BscV4Router is Ownable {
         if(++item.signatureCount >= minSignatures)
         {
             if(item.submitOrderEn == 1) {
-                if(item.gas > 0){
-                    address[] memory path1 = new address[](2);
-                    path1[0] = czzToken;
-                    path1[1] = item.wethAddr;
-                    ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, item.gas, 0, path1, item.gas, msg.sender, item.routerAddr, 1000000000000000000000);
-                }
+                
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolMint(0, item.amountIn, czzToken, item.gas);    // mint to contract address
                 ///transfer to user
                 //ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransfer(item.amount, item.toToken, item.to);
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransferEth(item.amount, item.toToken, item.to);
+                emit MintToken(item.to, item.amount, mid, item.amountIn);
+
             }else
             {
                 emit MintToken(item.to, 0, mid, 0);
-                return;
             }
-            emit MintToken(item.to, item.amount, mid, item.amountIn);
             remove_signature_all(item);
             deleteItems(mid);
             delete mintItems[mid];
