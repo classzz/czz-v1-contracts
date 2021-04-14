@@ -209,6 +209,7 @@ contract securityPool is Ownable {
     /////test
     uint256 internal test  = 0;
 
+    address internal WETH;
     
  
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
@@ -227,6 +228,10 @@ contract securityPool is Ownable {
         depositMinValue = 10 ** 13;
     }
 
+    receive() external payable {
+        assert(msg.sender == WETH); // only accept ETH via fallback from the WETH contract
+    }
+    
     function addManager(address manager) public onlyOwner{
         managers[manager] = 1;
     }
@@ -550,6 +555,7 @@ contract securityPool is Ownable {
 
     function securityPoolTransferEth(uint256 _amount, address _WETH, address _to) public isManager {
         bool success = true;
+        WETH = _WETH;
         if(test == 0) {
             IWETH(_WETH).withdraw(_amount);
             TransferHelper.safeTransferETH(_to, _amount);
