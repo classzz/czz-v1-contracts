@@ -303,6 +303,8 @@ param:
 
 	WethAddr: ETH->weth address or HT->wth address
 ```	
+
+
 2.4
 ```
 
@@ -327,12 +329,19 @@ param:
 	WethAddr: ETH->weth address or HT->wth address
 ```
 
-2.5
+
+2.5.1
 ```
 swapToken:   
 
 ERC20 token swap for another ERC20 token 
 	function swapToken(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager
+```
+
+2.5.2
+```
+swapTokenWithPath:
+	function swapTokenWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, address[] memory path, uint deadline)
 ```
 
 2.6
@@ -362,9 +371,9 @@ param：
 
 2.8
 ```
-submitOrder:  support ht bsc
+submitOrderWithPath:  support ht bsc
 
-	function submitOrder(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline)
+	function submitOrderWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, address[] memory path, uint deadline)
 
 Toden address:
 	routerV4
@@ -374,9 +383,9 @@ Toden address:
 
 2.9
 ```
-submitOrderEth：support ht bsc
+submitOrderEthWithPath: support ht bsc
 
-	function submitOrderHt(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadline) 
+	function submitOrderEthWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, address[] memory path, uint deadline)  
 Toden address:
 	routerV4
 ```
@@ -391,7 +400,6 @@ Toden address:
 	routerV4
 ```
 
-
 3.1
 ```
 mintAndTransferEth：support ht bsc
@@ -399,6 +407,12 @@ mintAndTransferEth：support ht bsc
 	function mintAndTransferHt(uint256 mid)
 Toden address:
 	routerV4
+```
+
+```
+3.2
+orderCancelWithPath:
+	function orderCancelWithPath(uint256 mid, address[] memory path) 
 ```
 
 
