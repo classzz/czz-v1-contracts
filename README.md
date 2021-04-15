@@ -1,6 +1,6 @@
 # czz-v1-contracts
 
-v1.7
+v1.8
 
 /////////////主网//
 heco
@@ -13,6 +13,7 @@ bsc
 bczz:
 0x2Fb9376cFf6fb7f5fe99665aE1Ec2FdDD5099134
 routerv1:
+0x007c98F9f2c70746a64572E67FBCc41a2b8bba18
 ```````````````
 eth
 eczz:
