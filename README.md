@@ -2,6 +2,25 @@
 
 v1.7
 
+/////////////主网//
+heco
+hczz:
+0x112489c758D405874e9Ece0586FD50B315216fcA
+routerv1:
+0x711D839CD1E6E81B971F5b6bBB4a6BD7C4B60Ac6
+```````````````
+bsc
+bczz:
+
+routerv1:
+```````````````
+eth
+eczz:
+
+routerv1:
+```````````````
+
+////////////////////
 1.contract address
 heco(test-net)：
 ```
