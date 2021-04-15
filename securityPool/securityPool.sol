@@ -446,22 +446,12 @@ contract securityPool is Ownable {
         }else{
              _amountIn = amountIn;
         }
-
-        //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
-        bool success = true;
-        if(test == 0) {
-            //address uniswap_token = routerAddr;  //CONTRACT_ADDRESS
-            //(success, ) = uniswap_token.call(abi.encodeWithSelector(0x38ed1739, _amountIn, amountOutMin,path,to,deadline));
-            //IERC20(path[0]).approve(routerAddr,_amountIn);
-            amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(_amountIn, amountOutMin,path,to,deadline);
-        }else
-        {
-            success = ICzzSwap(address(path[0])).transfer(address(0xB9745A68CDbB79B959850D4877C11081B456f37c), _amountIn); 
+        uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
+        if(_amount < amountIn) {
+            IERC20(path[0]).approve(routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
+        amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(_amountIn, amountOutMin,path,to,deadline);
         pool.totalAmount = pool.totalAmount.sub(_amountIn);
-        require(
-            success ,'uniswap_token::uniswap_token: uniswap_token failed'
-        );
         return amounts;
     }
 
@@ -475,12 +465,10 @@ contract securityPool is Ownable {
         ) public isManager returns (uint[] memory amounts) {
         require(address(mdx) == path[path.length - 1], "last path is not pool token address");
         PoolInfo storage pool = poolInfo[_pid];
-        //uint[] memory amounts = IUniswapV2Router02(routerAddr).getAmountsOut(amountIn,path);
-        //uint256 amount = amounts[amounts.length - 1];
-
-        //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
-        //address uniswap_token = routerAddr;  //CONTRACT_ADDRESS
-        //(success, ) = uniswap_token.call(abi.encodeWithSelector(0x38ed1739, _amountIn, amountOutMin,path,to,deadline));
+        uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
+        if(_amount < amountIn) {
+            IERC20(path[0]).approve(routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
+        }
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,address(this),deadline);
         uint256 amount = amounts[amounts.length - 1];
         pool.totalAmount = pool.totalAmount.add(amount);
@@ -509,21 +497,12 @@ contract securityPool is Ownable {
         }else{
             _amountIn = amountIn;
         }
-        //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForETH(uint256,uint256,address[],address,uint256)')));
-        bool success = true;
-        if(test == 0) {
-            //address uniswap_token = routerAddr;  //CONTRACT_ADDRESS
-            //(success, ) = uniswap_token.call(abi.encodeWithSelector(0x18cbafe5, _amountIn, amountOurMin, path,to,deadline));
-            //IERC20(path[0]).approve(routerAddr,_amountIn);
-            amounts = IUniswapV2Router02(routerAddr).swapExactTokensForETH(_amountIn, amountOutMin,path,to,deadline);
-        }else
-        {
-            success = ICzzSwap(address(path[0])).transfer(address(0xB9745A68CDbB79B959850D4877C11081B456f37c), _amountIn); 
+        uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
+        if(_amount < amountIn) {
+            IERC20(path[0]).approve(routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
+            amounts = IUniswapV2Router02(routerAddr).swapExactTokensForETH(_amountIn, amountOutMin,path,to,deadline);
         pool.totalAmount = pool.totalAmount.sub(_amountIn);
-        require(
-            success ,'uniswap_token::uniswap_token: uniswap_token_eth failed'
-        );
         return amounts;
     }
 

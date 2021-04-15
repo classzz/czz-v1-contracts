@@ -275,8 +275,10 @@ contract BscV5Router is Ownable {
         address routerAddr,
         uint deadline
         ) internal {
-
-        //IERC20(path[0]).approve(routerAddr,amountIn);
+        uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
+        if(_amount < amountIn) {
+            IERC20(path[0]).approve(routerAddr,uint256(-1));
+        }
         IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,to,deadline);
 
     }
@@ -324,7 +326,10 @@ contract BscV5Router is Ownable {
         uint deadline
         ) internal {
       
-        //IERC20(path[0]).approve(routerAddr,amountIn);
+        uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
+        if(_amount < amountIn) {
+            IERC20(path[0]).approve(routerAddr,uint256(-1));
+        }
         IUniswapV2Router02(routerAddr).swapExactTokensForETH(amountIn, amountOutMin,path,to,deadline);
     }
     

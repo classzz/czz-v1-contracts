@@ -218,8 +218,10 @@ contract CzzV5Router is Ownable {
         address routerAddr,
         uint deadline
         ) internal {
-
-        //IERC20(path[0]).approve(routerAddr,amountIn);
+        uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
+        if(_amount < amountIn) {
+            IERC20(path[0]).approve(routerAddr,uint256(-1));
+        }
         IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,to,deadline);
 
     }
@@ -267,7 +269,10 @@ contract CzzV5Router is Ownable {
         uint deadline
         ) internal {
       
-        //IERC20(path[0]).approve(routerAddr,amountIn);
+        uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
+        if(_amount < amountIn) {
+            IERC20(path[0]).approve(routerAddr,uint256(-1));
+        }
         IUniswapV2Router02(routerAddr).swapExactTokensForETH(amountIn, amountOutMin,path,to,deadline);
     }
     
@@ -447,7 +452,7 @@ contract CzzV5Router is Ownable {
         // require(msg.value > 0);
         //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
         require(address(0) != routerAddr); 
-        require(path[path.length - 1] != czzToken, "path 0 is not czz"); 
+        require(path[path.length - 1] != czzToken, "last path  is not czz"); 
         uint[] memory amounts = swap_burn_get_amount(_amountIn, path, routerAddr);
         _swapBurn(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
         if(ntype != 1){
