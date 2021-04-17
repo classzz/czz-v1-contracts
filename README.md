@@ -3,6 +3,24 @@
 v1.8
 
 /////////////mainnet//
+
+eth
+eczz:
+0x150BbCfF6b1B4D528b48f1A300585Dea0b6490B6
+routerv1:
+0x9AC88c5136240312f8817dBB99497aCe62b03F12
+
+Uniswap
+factory:
+0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f
+routerv2:
+0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
+weth:
+0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+initcode:
+0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f
+
+```````````````
 heco
 hczz:
 0x112489c758D405874e9Ece0586FD50B315216fcA
@@ -39,25 +57,6 @@ wbnb:
 initcode:
 0xd0d4c4cd0848c93cb4fd1f498d7013ee6bfb25783ea21593d5834f5d250ece66
 
-
-
-
-```````````````
-eth
-eczz:
-0x150BbCfF6b1B4D528b48f1A300585Dea0b6490B6
-routerv1:
-0x9AC88c5136240312f8817dBB99497aCe62b03F12
-
-Uniswap
-factory:
-0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f
-routerv2:
-0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
-weth:
-0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
-initcode:
-0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f
 
 
 ```````````````
