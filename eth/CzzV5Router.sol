@@ -452,7 +452,7 @@ contract CzzV5Router is Ownable {
         // require(msg.value > 0);
         //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
         require(address(0) != routerAddr); 
-        require(path[path.length - 1] != czzToken, "last path  is not czz"); 
+        require(path[path.length - 1] == czzToken, "last path  is not czz"); 
         uint[] memory amounts = swap_burn_get_amount(_amountIn, path, routerAddr);
         _swapBurn(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
         if(ntype != 1){
