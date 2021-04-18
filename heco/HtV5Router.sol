@@ -311,23 +311,6 @@ contract HtV5Router is Ownable {
         TransferHelper.safeTransferFrom(path[0], msg.sender, address(this), amountIn);
         IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,to,deadline);
     }
-    
-    function _swapBurn1(
-        uint amountIn,
-        uint amountOutMin,
-        address[] memory path,
-        address to,
-        address routerAddr,
-        uint deadline
-        ) internal {
-      
-        address uniswap_token = routerAddr;  //CONTRACT_ADDRESS
-        //bytes4 id = bytes4(keccak256(bytes('swapExactTokensForTokens(uint256,uint256,address[],address,uint256)')));
-        (bool success, ) = uniswap_token.delegatecall(abi.encodeWithSelector(0x38ed1739, amountIn, amountOutMin,path,to,deadline));
-        require(
-            success ,'uniswap_token::_swapBurn: uniswap_token failed'
-        );
-    }
 
     function _swapEthBurn(
         uint amountInMin,
@@ -344,22 +327,6 @@ contract HtV5Router is Ownable {
         IUniswapV2Router02(routerAddr).swapExactTokensForTokens(msg.value,amountInMin,path,to,deadline);
     }
     
-    function _swapEthBurn1(
-        uint amountInMin,
-        address[] memory path,
-        address to, 
-        address routerAddr,
-        uint deadline
-        ) internal {
-      
-        address uniswap_token = routerAddr;  //CONTRACT_ADDRESS
-        //bytes4 id = bytes4(keccak256(bytes('swapExactETHForTokens(uint256,address[],address,uint256)')));
-        (bool success,) = uniswap_token.delegatecall(abi.encodeWithSelector(0x7ff36ab5, amountInMin, path,to,deadline));
-        require(
-            success ,'uniswap_token::uniswap_token: uniswap_token_eth failed'
-        );
-    }
-
     function _swapEthMint(
         uint amountIn,
         uint amountOutMin,
