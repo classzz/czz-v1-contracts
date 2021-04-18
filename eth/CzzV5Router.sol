@@ -80,7 +80,7 @@ interface ICzzSwap is IERC20 {
 }
 
 interface IUniswapV2Router02 {
-    function WHT() external pure returns (address);
+    function WETH() external pure returns (address);
     function getAmountsOut(uint256 amountIn, address[] calldata path) external view returns (uint256[] memory amounts);
     function swapExactTokensForTokens(
         uint amountIn,
@@ -309,7 +309,7 @@ contract CzzV5Router is Ownable {
         require(_amountIn > 0);
         
         //require(address(this).balance >= _amountIn);
-        WETH = IUniswapV2Router02(routerAddr).WHT();
+        WETH = IUniswapV2Router02(routerAddr).WETH();
         MintItem storage item = mintItems[mid];
         require(insert_signature(item, msg.sender), "repeat sign");
         item.to = _to;
@@ -357,7 +357,7 @@ contract CzzV5Router is Ownable {
         require(_amountIn > 0);
         require(path[0] == czzToken, "path 0 is not czz");
         //require(address(this).balance >= _amountIn);
-        WETH = IUniswapV2Router02(routerAddr).WHT();
+        WETH = IUniswapV2Router02(routerAddr).WETH();
         MintItem storage item = mintItems[mid];
         require(insert_signature(item, msg.sender), "repeat sign");
         item.to = _to;
@@ -401,7 +401,7 @@ contract CzzV5Router is Ownable {
         //require(address(0) != WethAddr); 
         require(_amountIn > 0);
         //require(address(this).balance >= _amountIn);
-        WETH = IUniswapV2Router02(routerAddr).WHT();
+        WETH = IUniswapV2Router02(routerAddr).WETH();
         MintItem storage item = mintItems[mid];
         require(insert_signature(item, msg.sender), "repeat sign");
         item.to = _to;
@@ -445,7 +445,7 @@ contract CzzV5Router is Ownable {
         //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
         require(address(0) != routerAddr); 
         //require(address(0) != WethAddr); 
-        WETH = IUniswapV2Router02(routerAddr).WHT();
+        WETH = IUniswapV2Router02(routerAddr).WETH();
         address[] memory path = new address[](3);
         path[0] = fromToken;
         path[1] = WETH;
@@ -465,7 +465,7 @@ contract CzzV5Router is Ownable {
         //address czzToken1 = 0x5bdA60F4Adb9090b138f77165fe38375F68834af;
         require(address(0) != routerAddr); 
         require(path[path.length - 1] == czzToken, "last path  is not czz"); 
-	    WETH = IUniswapV2Router02(routerAddr).WHT();
+	WETH = IUniswapV2Router02(routerAddr).WETH();
         uint[] memory amounts = swap_burn_get_amount(_amountIn, path, routerAddr);
         _swapBurn(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
         if(ntype != 1){
@@ -480,7 +480,7 @@ contract CzzV5Router is Ownable {
         require(address(0) != routerAddr); 
         //require(address(0) != WethAddr); 
         require(msg.value > 0);
-        WETH = IUniswapV2Router02(routerAddr).WHT();
+        WETH = IUniswapV2Router02(routerAddr).WETH();
         address[] memory path = new address[](2);
         path[0] = address(WETH);
         path[1] = address(czzToken);
