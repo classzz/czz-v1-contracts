@@ -1,6 +1,6 @@
 # czz-v1-contracts
 
-v1.8
+v1.9
 
 /////////////mainnet//
 
@@ -25,7 +25,7 @@ heco
 hczz:
 0x112489c758D405874e9Ece0586FD50B315216fcA
 routerv1:
-0x711D839CD1E6E81B971F5b6bBB4a6BD7C4B60Ac6
+0x5c51687e7601cF71F90E799aAA7acF4bb6B30eEF
 
 Mdex:
 factory:
@@ -45,7 +45,7 @@ bsc
 bczz:
 0x2Fb9376cFf6fb7f5fe99665aE1Ec2FdDD5099134
 routerv1:
-0x007c98F9f2c70746a64572E67FBCc41a2b8bba18
+0x43d913F9b4766e83737839C0c58AaA3C3677F2F6
 
 Pancakeswap:
 factory:
