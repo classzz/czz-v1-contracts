@@ -1,6 +1,6 @@
 # czz-v1-contracts
 
-v1.9
+v2.0
 
 /////////////mainnet//
 
@@ -9,6 +9,8 @@ eczz:
 0x150BbCfF6b1B4D528b48f1A300585Dea0b6490B6
 routerv1:
 0xB2451147c6154659c350EaC39ED37599bff4d32e
+czzflashswap:
+0xA33Fd8A362B239e5E0436F80fB3f1Db59493fed0
 
 Uniswap
 factory:
@@ -25,7 +27,7 @@ heco
 hczz:
 0x112489c758D405874e9Ece0586FD50B315216fcA
 routerv1:
-0xdc3013FcF6A748c6b468de21b8A1680dbcb979ca
+0x075774e2b0b962b196e3660F9a85247Ad9dbEfbd
 
 Mdex:
 factory:
@@ -45,7 +47,7 @@ bsc
 bczz:
 0x2Fb9376cFf6fb7f5fe99665aE1Ec2FdDD5099134
 routerv1:
-0x711D839CD1E6E81B971F5b6bBB4a6BD7C4B60Ac6
+0x259df3970fF89B5B0DfEcA811da06EC330b2B576
 
 Pancakeswap:
 factory:
@@ -358,9 +360,9 @@ param：
 
 2.3
 ```
-swapAndBurn:  Token swap for hczztoken and burn hczz for cross mainnet
+swapAndBurnWithPath:  Token swap for hczztoken and burn hczz for cross mainnet
 
-	function swapAndBurn( uint _amountIn, uint _amountOutMin, address fromToken, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
+	function swapAndBurnWithPath( uint _amountIn, uint _amountOutMin, uint256 ntype, string memory toToken, address routerAddr, address[] memory path, uint deadline) payable public
 	
 contact address:
 	routerV4
@@ -380,15 +382,15 @@ param:
 
 	routerAddr: swap address
 
-	WethAddr: ETH->weth address or HT->wth address
+
 ```	
 
 
 2.4
 ```
 
-swapAndBurnEth: uniswap swap for eczztoken and burn eczz for cross mainnet
-	function swapAndBurnEth( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address WethAddr, uint deadline) payable public
+swapAndBurnEthWithPath: uniswap swap for eczztoken and burn eczz for cross mainnet
+	function swapAndBurnEthWithPath( uint _amountInMin, uint256 ntype, string memory toToken, address routerAddr, address[] memory path, uint deadline) payable public
 
 
 Token address:
@@ -409,25 +411,17 @@ param:
 ```
 
 
-2.5.1
-```
-swapToken:   
-
-ERC20 token swap for another ERC20 token 
-	function swapToken(address _to, uint _amountIn, uint256 mid, address toToken, uint256 gas, address routerAddr, address WethAddr, uint deadline) payable public isManager
-```
-
-2.5.2
+2.5
 ```
 swapTokenWithPath:
-	function swapTokenWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, address[] memory path, uint deadline)
+	function swapTokenWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address[] memory userPath, address[] memory gasPath, uint deadline) payable public
 ```
 
 2.6
 ```
 
-swapTokenForEth:  ERC20 token swap for ETH 
-	function swapTokenForETH(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, uint deadlines) payable public isManager
+swapTokenForEthWithPath:  ERC20 token swap for ETH 
+	function swapTokenForEthWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address[] memory path, uint deadline) payable public
 
 
 ```
@@ -452,7 +446,7 @@ param：
 ```
 submitOrderWithPath:  support ht bsc
 
-	function submitOrderWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, address[] memory path, uint deadline)
+	function submitOrderWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address[] memory userPath, address[] memory gasPath, uint deadline) public
 
 Toden address:
 	routerV4
@@ -464,7 +458,7 @@ Toden address:
 ```
 submitOrderEthWithPath: support ht bsc
 
-	function submitOrderEthWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address WethAddr, address[] memory path, uint deadline)  
+	function submitOrderEthWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address[] memory userPath, uint deadline) public
 Toden address:
 	routerV4
 ```
