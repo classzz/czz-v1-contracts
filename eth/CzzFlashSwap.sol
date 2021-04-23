@@ -118,15 +118,13 @@ contract HtV6Router is Ownable {
     
     function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public 
     {
-        address czzToken1 = czzToken;
-        ICzzSwap(czzToken1).burn(msg.sender, _amountIn);
+        ICzzSwap(czzToken).burn(msg.sender, _amountIn);
         emit BurnToken(msg.sender, _amountIn, ntype, toToken);
     }
 
     function mint(uint256 mid, address fromToken, uint256 _amountIn)  payable public isManager 
     {
-        address czzToken1 = czzToken;
-        ICzzSwap(czzToken1).mint(fromToken, _amountIn);
+        ICzzSwap(czzToken).mint(fromToken, _amountIn);
         emit MintToken(fromToken, 0, mid,_amountIn);
     }
 }

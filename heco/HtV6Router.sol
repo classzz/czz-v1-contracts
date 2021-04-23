@@ -407,12 +407,6 @@ contract HtV6Router is Ownable {
         //emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
 
     }
-    
-    function getMidAmount(uint256 mid) public view returns (uint256) {
-        
-        MintItem storage item = mintItems[mid];
-        return item.amount;
-    }
 
     function submitOrderEthWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address[] memory userPath, uint deadline) public isManager {
         require(address(0) != _to , "address(0) != _to");
@@ -629,29 +623,16 @@ contract HtV6Router is Ownable {
     function getCzzSecurityPoolPoolAddress() public view isManager returns(address ){
         return czzSecurityPoolPoolAddr;
     }
-    
-    function getBalanceOf(address token, address account) public view isManager returns(uint256 ){
-        return ICzzSwap(token).balanceOf(account);
-    }
-    
-    function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public isManager
+
+    function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public 
     {
-        address czzToken1 = czzToken;
-        ICzzSwap(czzToken1).burn(msg.sender, _amountIn);
-        emit BurnToken(msg.sender, _amountIn, ntype, toToken);
-    }
-    
-    function burn_Token( uint _amountIn, uint256 ntype, string memory toToken) payable public
-    {
-        address czzToken1 = czzToken;
-        ICzzSwap(czzToken1).burn(msg.sender, _amountIn);
+        ICzzSwap(czzToken).burn(msg.sender, _amountIn);
         emit BurnToken(msg.sender, _amountIn, ntype, toToken);
     }
 
     function mint(uint256 mid, address fromToken, uint256 _amountIn)  payable public isManager 
     {
-        address czzToken1 = czzToken;
-        ICzzSwap(czzToken1).mint(fromToken, _amountIn);
+        ICzzSwap(czzToken).mint(fromToken, _amountIn);
         emit MintToken(fromToken, 0, mid,_amountIn);
     }
 }
