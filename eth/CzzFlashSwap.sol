@@ -72,17 +72,10 @@ interface ICzzSwap is IERC20 {
 }
 
 
-contract HtV6Router is Ownable {
+contract CzzFlashSwap is Ownable {
     address czzToken;
     mapping (address => uint8) private managers;
     
-    
-    event MintToken(
-        address indexed to,
-        uint256 amount,
-        uint256 mid,
-        uint256 amountIn
-    );
     event BurnToken(
         address  indexed to,
         uint256  amount,
@@ -122,9 +115,5 @@ contract HtV6Router is Ownable {
         emit BurnToken(msg.sender, _amountIn, ntype, toToken);
     }
 
-    function mint(uint256 mid, address fromToken, uint256 _amountIn)  payable public isManager 
-    {
-        ICzzSwap(czzToken).mint(fromToken, _amountIn);
-        emit MintToken(fromToken, 0, mid,_amountIn);
-    }
+
 }
