@@ -174,6 +174,7 @@ contract securityPool is Ownable {
         uint256 amount;     // How many LP tokens the user has provided.
         uint256 rewardDebt; // Reward debt.
         uint256 pendingAmount; // 
+        uint256 lossAmount;
     }
 
     // Info of each pool.
@@ -367,13 +368,31 @@ contract securityPool is Ownable {
         require(user.amount >= _amount, "withdrawMdx: not good");
         updatePool(_pid);
         uint256 pendingAmount = user.amount.mul(pool.accMdxPerShare).div(1e12).sub(user.rewardDebt);
+        user.lossAmount = user.lossAmount.add(pool.lossAmount.mul(_amount).div(pool.totalAmount));
         if (pendingAmount > 0) {
-            safeMdxTransfer(_pid, _user, pendingAmount);
+            if(user.lossAmount < pendingAmount){
+                safeMdxTransfer(_pid, _user, pendingAmount.sub(user.lossAmount));
+                pool.lossAmount = pool.lossAmount.sub(user.lossAmount);
+                user.lossAmount = 0;
+            }else{
+                pool.lossAmount = pool.lossAmount.sub(pendingAmount);
+                user.lossAmount = user.lossAmount.sub(pendingAmount);
+            }
+            
         }
         if (_amount > 0) {
-            user.amount = user.amount.sub(_amount);
-            pool.totalAmount = pool.totalAmount.sub(_amount);
-            pool.lpToken.safeTransfer(_user, _amount);
+            if(user.lossAmount>0){
+                uint256 _amount_ = _amount.sub(user.lossAmount);
+                user.amount = user.amount.sub(_amount);
+                pool.totalAmount = pool.totalAmount.sub(_amount);
+                pool.lpToken.safeTransfer(_user, _amount_);
+                pool.lossAmount = pool.lossAmount.sub(user.lossAmount);
+                user.lossAmount = 0;
+            }else{
+                user.amount = user.amount.sub(_amount);
+                pool.totalAmount = pool.totalAmount.sub(_amount);
+                pool.lpToken.safeTransfer(_user, _amount);
+            }
         }
         user.rewardDebt = user.amount.mul(pool.accMdxPerShare).div(1e12);
         emit Withdraw(_user, _pid, _amount);
@@ -388,10 +407,18 @@ contract securityPool is Ownable {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
         uint256 amount = user.amount;
+        user.lossAmount = user.lossAmount.add(pool.lossAmount.mul(amount).div(pool.totalAmount));
         user.amount = 0;
         user.rewardDebt = 0;
-        pool.lpToken.safeTransfer(_user, amount);
+        if(user.lossAmount > 0){
+            pool.lpToken.safeTransfer(_user, amount.sub(user.lossAmount));
+        }else{
+            pool.lpToken.safeTransfer(_user, amount);
+        }
         pool.totalAmount = pool.totalAmount.sub(amount);
+        pool.lossAmount = pool.lossAmount.sub(user.lossAmount);
+        user.lossAmount = 0;
+
         emit EmergencyWithdraw(_user, _pid, amount);
     }
 
