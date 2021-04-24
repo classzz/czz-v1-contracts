@@ -1,9 +1,9 @@
+
 pragma solidity =0.6.6;
 
 import './IERC20.sol';
-import './IMdexFactory.sol';
 
-
+import './UniswapV2Library.sol';
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
         return msg.sender;
@@ -99,7 +99,7 @@ interface IUniswapV2Router02 {
 
 
 
-contract HtV6Router is Ownable {
+contract CzzV5Router is Ownable {
     
     address czzToken;
     
@@ -297,7 +297,7 @@ contract HtV6Router is Ownable {
     
     function swap_burn_get_getReserves(address factory, address tokenA, address tokenB) public view isManager returns (uint reserveA, uint reserveB){
         require(address(0) != factory);
-        return  IMdexFactory(factory).getReserves(tokenA, tokenB);
+        return UniswapV2Library.getReserves(factory, tokenA, tokenB);
     }
     
     function swap_burn_get_amount(uint amountIn, address[] memory path,address routerAddr) public view returns (uint[] memory amounts){
@@ -393,7 +393,7 @@ contract HtV6Router is Ownable {
 
         uint[] memory amounts = swap_burn_get_amount(_amountIn, path, routerAddr);
         _swapBurn(_amountIn, _amountOutMin, path, msg.sender, routerAddr, deadline);
-        if(ntype != 2){
+        if(ntype != 1){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
         }
@@ -407,7 +407,7 @@ contract HtV6Router is Ownable {
         require(msg.value > 0);
         uint[] memory amounts = swap_burn_get_amount(msg.value, path, routerAddr);
         _swapEthBurn(_amountInMin, path, msg.sender, routerAddr, deadline);
-        if(ntype != 2){
+        if(ntype != 1){
             ICzzSwap(czzToken).burn(msg.sender, amounts[amounts.length - 1]);
             emit BurnToken(msg.sender, amounts[amounts.length - 1], ntype, toToken);
         }
@@ -429,7 +429,7 @@ contract HtV6Router is Ownable {
     function getCzzTonkenAddress() public view isManager returns(address ){
         return czzToken;
     }
-
+    }
 
     function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public 
     {
