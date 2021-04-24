@@ -99,7 +99,7 @@ interface IUniswapV2Router02 {
 
 
 
-contract CzzV5Router is Ownable {
+contract CzzV6Router is Ownable {
     
     address czzToken;
     
