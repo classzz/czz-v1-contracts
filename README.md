@@ -1,13 +1,13 @@
 # czz-v1-contracts
 
-v2.0
+v0.20
 
 /////////////mainnet//
 
 eth
 eczz:
 0x150BbCfF6b1B4D528b48f1A300585Dea0b6490B6
-routerv1:
+routerv0.1:
 0xB2451147c6154659c350EaC39ED37599bff4d32e
 czzflashswap:
 0xA33Fd8A362B239e5E0436F80fB3f1Db59493fed0
@@ -26,7 +26,7 @@ initcode:
 heco
 hczz:
 0x112489c758D405874e9Ece0586FD50B315216fcA
-routerv1:
+routerv0.1:
 0x075774e2b0b962b196e3660F9a85247Ad9dbEfbd
 
 Mdex:
@@ -46,7 +46,7 @@ initcode:
 bsc
 bczz:
 0x2Fb9376cFf6fb7f5fe99665aE1Ec2FdDD5099134
-routerv1:
+routerv0.1:
 0x259df3970fF89B5B0DfEcA811da06EC330b2B576
 
 Pancakeswap:
@@ -90,16 +90,16 @@ heco(test-net)：
 	wht:
     0xA9e7417c676F70E5a13c919e78FB1097166568C5
 
-    routerv1: our-contract
+    routerv0.1: our-contract
     0x64Dd2D13dA5469a50D747B9CE35a5EcB4865d054
 
-	routerv4:
+	routerv0.4:
 	0xD1DD6AC27E805c8DE76e30dec1142d023F4e45A6
 
-	routerv5:
+	routerv0.5:
 	0x8f168bce7C81e6E24743489374B4CA183cAc9915
 
-	routerv6:
+	routerv0.6:
 	0xe27A7C26F9F4AE9F70157cCC50CBc6A27caa5BF8
 
 	securityPoll:
@@ -129,14 +129,14 @@ ETH ropsten:
 	weth:
 	0xc778417e063141139fce010982780140aa0cd5ab
 
-	routerV1:
+	routerV0.1:
 	0x6aE86268312A815831A5cfe35187d1f3D2B6dE76
 
-	routerV3:
+	routerV0.:
 	0x04e683b0ba2531c80ECf996DE7Ce34c10d190976
-	routerv5:
+	routerv0.5:
 	0xE75b15C1ffA62C20d750594E61Ad703f8a4324C3
-	routerv6:
+	routerv0.6:
 	0x6DcdaA9236E1d8cABE32aE707413cEBAf56b3283
 
 
@@ -156,17 +156,17 @@ BSC:
 	INIT_CODE_PAIR_HASH:
 	0xd0d4c4cd0848c93cb4fd1f498d7013ee6bfb25783ea21593d5834f5d250ece66
 
-	routerv1:
+	routerv0.1:
 	0xb39E84c6AD0574af30fb5f0185ad2d4f2DBa4262
 
 
-	routerv4:
+	routerv0.4:
 	0x7c1DD2600F4A72f5D05b73444397795522e1B685
 
-	routerv5:
+	routerv0.5:
 	0xb4268E74d9ea977F292CC66b0AdF8dd9E2EF2EAA
 
-	routerv6:
+	routerv0.6:
 	0x4c959881D80E3ca7a167642AA5F3d5Ae8c3a6E9C
 
 	securityPoll:
