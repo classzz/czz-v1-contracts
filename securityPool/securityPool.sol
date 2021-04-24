@@ -185,6 +185,8 @@ contract securityPool is Ownable {
         uint256 totalAmount;    // Total amount of current pool deposit.
         uint256 totalPendingReward ;
         uint256 totalReward;
+        uint256 usingAmount;
+        uint256 lossAmount;
     }
 
     // The MDX Token!
@@ -264,7 +266,9 @@ contract securityPool is Ownable {
         accMdxPerShare : 0,
         totalAmount : 0,
         totalPendingReward : 0,
-        totalReward : 0
+        totalReward : 0,
+        usingAmount : 0,
+        lossAmount : 0
         }));
         allocPoint = _allocPoint;
         allocPointDecimals = _allocPointDecimals;
@@ -451,7 +455,7 @@ contract securityPool is Ownable {
             IERC20(path[0]).approve(routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(_amountIn, amountOutMin,path,to,deadline);
-        pool.totalAmount = pool.totalAmount.sub(_amountIn);
+        pool.usingAmount = pool.usingAmount.add(_amountIn);
         return amounts;
     }
 
@@ -459,6 +463,7 @@ contract securityPool is Ownable {
         uint256 _pid,
         uint amountIn,
         uint amountOutMin,
+        uint AmountInOfOrder,
         address[] memory path,
         address routerAddr,
         uint deadline
@@ -471,9 +476,42 @@ contract securityPool is Ownable {
         }
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,address(this),deadline);
         uint256 amount = amounts[amounts.length - 1];
-        pool.totalAmount = pool.totalAmount.add(amount);
+        if(AmountInOfOrder > amount){
+            pool.usingAmount = pool.usingAmount.sub(amount);
+            pool.lossAmount = AmountInOfOrder - amount;
+        }else{
+            pool.usingAmount = pool.usingAmount.sub(AmountInOfOrder);
+        }
         return amounts;
     }
+
+    function securityPoolSwapEthCancel(
+        uint256 _pid,
+        uint amountIn,
+        uint amountOutMin,
+        uint AmountInOfOrder,
+        address[] memory path,
+        address routerAddr,
+        uint deadline
+        ) public isManager returns (uint[] memory amounts) {
+        require(address(mdx) == path[path.length - 1], "last path is not pool token address");
+        PoolInfo storage pool = poolInfo[_pid];
+        uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
+        if(_amount < amountIn) {
+            IERC20(path[0]).approve(routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
+        }
+        IWETH(path[0]).deposit{value: amountIn}();
+        amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,address(this),deadline);
+        uint256 amount = amounts[amounts.length - 1];
+        if(AmountInOfOrder > amount){
+            pool.usingAmount = pool.usingAmount.sub(amount);
+            pool.lossAmount = AmountInOfOrder - amount;
+        }else{
+            pool.usingAmount = pool.usingAmount.sub(AmountInOfOrder);
+        }
+        return amounts;
+    }
+    
 
     function securityPoolSwapEth(
         uint256 _pid,
@@ -502,7 +540,7 @@ contract securityPool is Ownable {
             IERC20(path[0]).approve(routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
             amounts = IUniswapV2Router02(routerAddr).swapExactTokensForETH(_amountIn, amountOutMin,path,to,deadline);
-        pool.totalAmount = pool.totalAmount.sub(_amountIn);
+        pool.usingAmount = pool.usingAmount.add(_amountIn);
         return amounts;
     }
 
@@ -517,15 +555,17 @@ contract securityPool is Ownable {
 
     function securityPoolMint(uint256 _pid, uint256 _swapAmount, address _token, uint256 _gas) public isManager {
         PoolInfo storage pool = poolInfo[_pid];
+        require(address(mdx) == _token, "token is not pool token address");
         uint256  _reward = _swapAmount.sub(_gas).mul(allocPoint).div(allocPointDecimals);
         ICzzSwap(_token).mint(address(this), _swapAmount); 
-        pool.totalAmount = pool.totalAmount.add(_swapAmount.sub(_reward));
+        pool.usingAmount = pool.usingAmount.sub(_swapAmount.sub(_reward));
         //Calculation of reward!!
         addReward(_pid,_reward);
     }
 
     function securityPoolTransfer(uint256 _amount, address _token, address _to) public isManager {
         bool success = true;
+        require(address(mdx) != _token, "token is pool token address");
         if(test == 0) {
          (success) = ICzzSwap(_token).transfer(_to, _amount); 
         }
@@ -538,8 +578,6 @@ contract securityPool is Ownable {
         if(test == 0) {
             IWETH(_WETH).withdraw(_amount);
             TransferHelper.safeTransferETH(_to, _amount);
-            //(success,) = _to.call{value:_amount}(new bytes(0));
-            //(success) = ICzzSwap(_WETH).transfer(_to, _amount); 
         }
         require(success, 'securityPoolTransferEth: ETH_TRANSFER_FAILED');
     }
