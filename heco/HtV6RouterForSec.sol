@@ -82,7 +82,7 @@ interface ICzzSecurityPoolSwapPool {
     function securityPoolSwapEth(
         uint256 _pid,
         uint amountIn,
-        uint amountOurMin,
+        uint amountOutMin,
         address[] calldata path,
         uint256 gas,
         address to, 
@@ -92,7 +92,7 @@ interface ICzzSecurityPoolSwapPool {
     function securityPoolSwapCancel(
         uint256 _pid,
         uint amountIn,
-        uint amountOurMin,
+        uint amountOutMin,
         uint AmountInOfOrder,
         address[] calldata path,
         address routerAddr,
@@ -122,6 +122,7 @@ contract HtV6RouterForSec is Ownable {
     uint constant MIN_SIGNATURES = 1;
     uint minSignatures = 0;
     mapping (address => uint8) private managers;
+    mapping (address => uint8) private routerAddrs;
     mapping (uint => MintItem) private mintItems;
     uint256[] private pendingItems;
     struct KeyFlag { address key; bool deleted; }
@@ -188,11 +189,20 @@ contract HtV6RouterForSec is Ownable {
     function removeManager(address manager) public onlyOwner{
         managers[manager] = 0;
     }
+
+    function addRouterAddr(address routerAddr) public isManager{
+        routerAddrs[routerAddr] = 1;
+    }
+    
+    function removeRouterAddr(address routerAddr) public isManager{
+        routerAddrs[routerAddr] = 0;
+    }
     
     function approve(address token, address spender, uint256 _amount) public virtual returns (bool) {
         require(address(token) != address(0), "approve token is the zero address");
         require(address(spender) != address(0), "approve spender is the zero address");
         require(_amount != 0, "approve _amount is the zero ");
+        require(routerAddrs[spender] == 1, "spender is not router address ");        
         IERC20(token).approve(spender,_amount);
         return true;
     }

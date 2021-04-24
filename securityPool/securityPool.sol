@@ -169,6 +169,7 @@ contract securityPool is Ownable {
     using SafeERC20 for IERC20;
 
     mapping (address => uint8) private managers;
+    mapping (address => uint8) private routerAddrs;
     // Info of each user.
     struct UserInfo {
         uint256 amount;     // How many LP tokens the user has provided.
@@ -243,6 +244,13 @@ contract securityPool is Ownable {
         managers[manager] = 0;
     }
 
+    function addRouterAddr(address routerAddr) public isManager{
+        routerAddrs[routerAddr] = 1;
+    }
+    
+    function removeRouterAddr(address routerAddr) public isManager{
+        routerAddrs[routerAddr] = 0;
+    }
 
     function poolLength() public view returns (uint256) {
         return poolInfo.length;
@@ -252,6 +260,7 @@ contract securityPool is Ownable {
         require(address(token) != address(0), "approve token is the zero address");
         require(address(spender) != address(0), "approve spender is the zero address");
         require(_amount != 0, "approve _amount is the zero ");
+        require(routerAddrs[spender] == 1, "spender is not router address ");        
         IERC20(token).approve(spender,_amount);
         return true;
     }
@@ -479,7 +488,7 @@ contract securityPool is Ownable {
         }
         uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
         if(_amount < amountIn) {
-            IERC20(path[0]).approve(routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
+            approve(path[0], routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(_amountIn, amountOutMin,path,to,deadline);
         pool.usingAmount = pool.usingAmount.add(_amountIn);
@@ -499,7 +508,7 @@ contract securityPool is Ownable {
         PoolInfo storage pool = poolInfo[_pid];
         uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
         if(_amount < amountIn) {
-            IERC20(path[0]).approve(routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
+            approve(path[0], routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,address(this),deadline);
         uint256 amount = amounts[amounts.length - 1];
@@ -525,7 +534,7 @@ contract securityPool is Ownable {
         PoolInfo storage pool = poolInfo[_pid];
         uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
         if(_amount < amountIn) {
-            IERC20(path[0]).approve(routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
+            approve(path[0], routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
         IWETH(path[0]).deposit{value: amountIn}();
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,address(this),deadline);
@@ -564,7 +573,7 @@ contract securityPool is Ownable {
         }
         uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
         if(_amount < amountIn) {
-            IERC20(path[0]).approve(routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
+            approve(path[0], routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
             amounts = IUniswapV2Router02(routerAddr).swapExactTokensForETH(_amountIn, amountOutMin,path,to,deadline);
         pool.usingAmount = pool.usingAmount.add(_amountIn);

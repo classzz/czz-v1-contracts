@@ -143,6 +143,7 @@ contract HtV6Router is Ownable {
     uint constant MIN_SIGNATURES = 1;
     uint minSignatures = 0;
     mapping (address => uint8) private managers;
+    mapping (address => uint8) private routerAddrs;
     mapping (uint => MintItem) private mintItems;
     uint256[] private pendingItems;
     struct KeyFlag { address key; bool deleted; }
@@ -224,11 +225,20 @@ contract HtV6Router is Ownable {
     function removeManager(address manager) public onlyOwner{
         managers[manager] = 0;
     }
+
+    function addRouterAddr(address routerAddr) public isManager{
+        routerAddrs[routerAddr] = 1;
+    }
+    
+    function removeRouterAddr(address routerAddr) public isManager{
+        routerAddrs[routerAddr] = 0;
+    }
     
     function approve(address token, address spender, uint256 _amount) public virtual returns (bool) {
         require(address(token) != address(0), "approve token is the zero address");
         require(address(spender) != address(0), "approve spender is the zero address");
         require(_amount != 0, "approve _amount is the zero ");
+        require(routerAddrs[spender] == 1, "spender is not router address ");        
         IERC20(token).approve(spender,_amount);
         return true;
     }
@@ -288,7 +298,7 @@ contract HtV6Router is Ownable {
         ) internal {
         uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
         if(_amount < amountIn) {
-            IERC20(path[0]).approve(routerAddr,uint256(-1));
+            approve(path[0], routerAddr,uint256(-1));
         }
         IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,to,deadline);
 
@@ -304,7 +314,7 @@ contract HtV6Router is Ownable {
         ) internal {
         uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
         if(_amount < amountIn) {
-            IERC20(path[0]).approve(routerAddr,uint256(-1));
+            approve(path[0], routerAddr,uint256(-1));
         }
         TransferHelper.safeTransferFrom(path[0], msg.sender, address(this), amountIn);
         IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,to,deadline);
@@ -319,7 +329,7 @@ contract HtV6Router is Ownable {
         ) internal {
         uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
         if(_amount < msg.value) {
-            IERC20(path[0]).approve(routerAddr,uint256(-1));
+            approve(path[0], routerAddr,uint256(-1));
         }
         IWETH(path[0]).deposit{value: msg.value}();
         IUniswapV2Router02(routerAddr).swapExactTokensForTokens(msg.value,amountInMin,path,to,deadline);
@@ -336,7 +346,7 @@ contract HtV6Router is Ownable {
       
         uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
         if(_amount < amountIn) {
-            IERC20(path[0]).approve(routerAddr,uint256(-1));
+            approve(path[0], routerAddr,uint256(-1));
         }
         IUniswapV2Router02(routerAddr).swapExactTokensForETH(amountIn, amountOutMin,path,to,deadline);
     }
