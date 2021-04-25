@@ -439,11 +439,47 @@ contract BscV6Router is Ownable {
         ICzzSwap(czzToken).burn(msg.sender, _amountIn);
         emit BurnToken(msg.sender, _amountIn, ntype, toToken);
     }
-
-    function mint(uint256 mid, address fromToken, uint256 _amountIn)  payable public isManager 
+    
+    function mintWithGas(uint256 mid, address _to, uint256 _amountIn, uint256 gas, address routerAddr, address[] memory gasPath, uint256 deadline)  payable public isManager 
     {
-        ICzzSwap(czzToken).mint(fromToken, _amountIn);
-        emit MintToken(fromToken, 0, mid,_amountIn);
+        require(address(0) != routerAddr); 
+        require(_amountIn > 0);
+        require(gasPath[0] == czzToken, "userPath 0 is not czz");
+        require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
+
+        MintItem storage item = mintItems[mid];
+        require(insert_signature(item, msg.sender), "repeat sign");
+        item.to = _to;
+        item.amount = _amountIn;
+        if(item.signatureCount++ == 0) {
+            pendingItems.push(mid);
+            emit MintItemCreated(msg.sender, _to, _amountIn, mid);
+        }
+        if(item.signatureCount >= minSignatures)
+        {
+            if(getItem(mid) != 0){
+                return;
+            }
+            require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
+            ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
+            if(gas > 0){
+                 _swapEthMint(gas, 0, gasPath, msg.sender, routerAddr, deadline);
+            }
+            ICzzSwap(czzToken).transfer(_to, _amountIn-gas);
+            emit MintToken(_to, _amountIn-gas, mid,_amountIn);
+            remove_signature_all(item);
+            deleteItems(mid);
+            delete mintItems[mid];
+            return;
+        }
+        // MintItem item;
+        mintItems[mid] = item;
+    }
+
+    function mint(uint256 mid, address _to, uint256 _amountIn)  payable public isManager 
+    {
+        ICzzSwap(czzToken).mint(_to, _amountIn);
+        emit MintToken(_to, 0, mid,_amountIn);
     }
 }
 
