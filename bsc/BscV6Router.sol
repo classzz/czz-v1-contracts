@@ -176,7 +176,11 @@ contract BscV6Router is Ownable {
     function removeRouterAddr(address routerAddr) public isManager{
         routerAddrs[routerAddr] = 0;
     }
-    
+
+    function getRegistedRouteraddress(address routerAddr) public view isManager returns(uint8 ){
+        return routerAddrs[routerAddr];
+    }
+   
     function approve(address token, address spender, uint256 _amount) public virtual returns (bool) {
         require(address(token) != address(0), "approve token is the zero address");
         require(address(spender) != address(0), "approve spender is the zero address");
@@ -429,7 +433,7 @@ contract BscV6Router is Ownable {
         return czzToken;
     }
 
-
+    
     function burn( uint _amountIn, uint256 ntype, string memory toToken) payable public 
     {
         ICzzSwap(czzToken).burn(msg.sender, _amountIn);
