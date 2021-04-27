@@ -94,6 +94,7 @@ interface ICzzSecurityPoolSwapPool {
         uint amountIn,
         uint amountOutMin,
         uint AmountInOfOrder,
+        uint gas,
         address[] calldata path,
         address routerAddr,
         uint deadline
@@ -103,6 +104,7 @@ interface ICzzSecurityPoolSwapPool {
         uint amountIn,
         uint amountOurMin,
         uint AmountInOfOrder,
+        uint gas,
         address[] calldata path,
         address routerAddr,
         uint deadline
@@ -190,23 +192,6 @@ contract HtV6RouterForSec is Ownable {
         managers[manager] = 0;
     }
 
-    function addRouterAddr(address routerAddr) public isManager{
-        routerAddrs[routerAddr] = 1;
-    }
-    
-    function removeRouterAddr(address routerAddr) public isManager{
-        routerAddrs[routerAddr] = 0;
-    }
-    
-    function approve(address token, address spender, uint256 _amount) public virtual returns (bool) {
-        require(address(token) != address(0), "approve token is the zero address");
-        require(address(spender) != address(0), "approve spender is the zero address");
-        require(_amount != 0, "approve _amount is the zero ");
-        require(routerAddrs[spender] == 1, "spender is not router address ");        
-        IERC20(token).approve(spender,_amount);
-        return true;
-    }
-    
     function deleteItems(uint256 mid) internal isManager {
         uint8 replace = 0;
         for(uint i = 0; i< pendingItems.length; i++){
@@ -260,7 +245,7 @@ contract HtV6RouterForSec is Ownable {
         MintItem storage item = mintItems[mid];
         
         
-        ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapCancel(0, item.amount, 0, item.amountIn, path, routerAddr, 10000000000000000000);
+        ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapCancel(0, item.amount, 0, item.amountIn, item.gas, path, routerAddr, 10000000000000000000);
         emit OrderCancel(item.to, 0, mid, 0);
         remove_signature_all(item);
         deleteItems(mid);
@@ -274,7 +259,7 @@ contract HtV6RouterForSec is Ownable {
         MintItem storage item = mintItems[mid];
         
         
-        ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEthCancel(0, item.amount, 0, item.amountIn, path, routerAddr, 10000000000000000000);
+        ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEthCancel(0, item.amount, 0, item.amountIn, item.gas, path, routerAddr, 10000000000000000000);
         emit OrderCancel(item.to, 0, mid, 0);
         remove_signature_all(item);
         deleteItems(mid);

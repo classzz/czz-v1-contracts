@@ -500,6 +500,7 @@ contract securityPool is Ownable {
         uint amountIn,
         uint amountOutMin,
         uint AmountInOfOrder,
+        uint gas,
         address[] memory path,
         address routerAddr,
         uint deadline
@@ -510,13 +511,16 @@ contract securityPool is Ownable {
         if(_amount < amountIn) {
             approve(path[0], routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
+        
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,address(this),deadline);
         uint256 amount = amounts[amounts.length - 1];
-        if(AmountInOfOrder > amount){
-            pool.usingAmount = pool.usingAmount.sub(amount);
-            pool.lossAmount = AmountInOfOrder - amount;
+        uint reward = (AmountInOfOrder.sub(gas)).mul(allocPoint).div(allocPointDecimals);
+        uint useAmount = AmountInOfOrder.sub(reward);
+        pool.usingAmount = pool.usingAmount.sub(useAmount);
+        if(useAmount > amount){
+            pool.lossAmount = pool.lossAmount.add(useAmount.sub(amount));
         }else{
-            pool.usingAmount = pool.usingAmount.sub(AmountInOfOrder);
+            pool.totalPendingReward = pool.totalPendingReward.add(amount.sub(useAmount));
         }
         return amounts;
     }
@@ -526,6 +530,7 @@ contract securityPool is Ownable {
         uint amountIn,
         uint amountOutMin,
         uint AmountInOfOrder,
+        uint gas,
         address[] memory path,
         address routerAddr,
         uint deadline
@@ -539,11 +544,13 @@ contract securityPool is Ownable {
         IWETH(path[0]).deposit{value: amountIn}();
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(amountIn, amountOutMin,path,address(this),deadline);
         uint256 amount = amounts[amounts.length - 1];
-        if(AmountInOfOrder > amount){
-            pool.usingAmount = pool.usingAmount.sub(amount);
-            pool.lossAmount = AmountInOfOrder - amount;
+        uint reward = (AmountInOfOrder.sub(gas)).mul(allocPoint).div(allocPointDecimals);
+        uint useAmount = AmountInOfOrder.sub(reward);
+        pool.usingAmount = pool.usingAmount.sub(useAmount);
+        if(useAmount > amount){
+            pool.lossAmount = pool.lossAmount.add(useAmount.sub(amount));
         }else{
-            pool.usingAmount = pool.usingAmount.sub(AmountInOfOrder);
+            pool.totalPendingReward = pool.totalPendingReward.add(amount.sub(useAmount));
         }
         return amounts;
     }
@@ -566,8 +573,9 @@ contract securityPool is Ownable {
         //Calculation of reward !!!
         uint _amountIn = 0;
         if(gas == 0) {
-            require(amountIn.mul(allocPoint).div(allocPointDecimals) > 0, "amountIn: volumes are too small");
-             _amountIn = amountIn.sub(amountIn.mul(allocPoint).div(allocPointDecimals));
+            uint256 _in= amountIn.mul(allocPoint).div(allocPointDecimals) ;
+            require(_in > 0, "amountIn: volumes are too small");
+             _amountIn = amountIn.sub(_in);
         }else{
             _amountIn = amountIn;
         }
