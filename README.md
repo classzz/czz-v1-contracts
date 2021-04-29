@@ -350,7 +350,8 @@ XVS
 
 
 
-2.function
+2.
+=======Router function
 
 2.1
 ```
@@ -453,7 +454,7 @@ swap_burn_get_getReserves: get pair reserves
 	function swap_burn_get_getReserves(address factory, address tokenA, address tokenB) public view isManager returns (uint reserveA, uint reserveB)
 
 Toden address:
-	routerV4
+	routerV6
 
 param：
 	factory： 
@@ -463,6 +464,8 @@ param：
 
 
 
+========router for security :support ht bsc
+
 2.8
 ```
 submitOrderWithPath:  support ht bsc
@@ -470,7 +473,7 @@ submitOrderWithPath:  support ht bsc
 	function submitOrderWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address[] memory userPath, address[] memory gasPath, uint deadline) public
 
 Toden address:
-	routerV4
+	routerV6
 ```
 
 
@@ -481,7 +484,7 @@ submitOrderEthWithPath: support ht bsc
 
 	function submitOrderEthWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address[] memory userPath, uint deadline) public
 Toden address:
-	routerV4
+	routerV6
 ```
 
 
@@ -491,7 +494,7 @@ mintAndTransfer：support ht bsc
 
 	function mintAndTransfer(uint256 mid) 
 Toden address:
-	routerV4
+	routerV6
 ```
 
 3.1
@@ -500,26 +503,32 @@ mintAndTransferEth：support ht bsc
 
 	function mintAndTransferHt(uint256 mid)
 Toden address:
-	routerV4
+	routerV6
 ```
 
 ```
 3.2
 orderCancelWithPath:
-	function orderCancelWithPath(uint256 mid, address[] memory path) 
+	function orderCancelWithPath(uint256 mid, address[] memory path, address routerAddr) 
+```
+```
+3.2
+orderCancelEthWithPath:
+	function orderCancelEthWithPath(uint256 mid, address[] memory path, address routerAddr) 
 ```
 
 
-securityPoll:
+========securityPoll:  support ht bsc
 
 1.1
-deposit:Deposit LP tokens to Pool.  _pid = 0  
+deposit:Deposit LP tokens to Pool.  _pid = 0  (0: czztoken)
 	function deposit(uint256 _pid, uint256 _amount) 
 
 2.2
-withdraw:Withdraw LP tokens from Pool.  _pid = 0  
+withdraw:Withdraw LP tokens from Pool.  _pid = 0  (0: czztoken)
 	function withdraw(uint256 _pid, uint256 _amount)
 
 3.3
-pending: View function to see pending on frontend.  _pid = 0  
+pending: View function to see pending on frontend.  _pid = 0  (0: czztoken)
 	function pending(uint256 _pid, address _user) external view returns 
+
