@@ -21,6 +21,16 @@ weth:
 initcode:
 0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f
 
+SuShi
+factory:
+0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac
+routerv2:
+0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F
+weth:
+0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+initcode:
+0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303
+
 ```````````````
 heco
 hczz:
