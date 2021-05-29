@@ -95,7 +95,7 @@ interface ICzzSecurityPoolSwapPool {
     function securityPoolSwapGetAmount(uint256 amountOut, address[] calldata path, address routerAddr) external view returns (uint[] memory amounts);
 }
 
-contract HtV6RouterForSec is Ownable {
+contract HtV7RouterForSec is Ownable {
     
     address czzToken;
     address czzSecurityPoolPoolAddr;
