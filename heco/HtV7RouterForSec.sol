@@ -217,7 +217,11 @@ contract HtV7RouterForSec is Ownable {
         }
     }
 
-
+    function swap_burn_get_amount(uint amountIn, address[] memory path,address routerAddr) public view returns (uint[] memory amounts){
+        require(address(0) != routerAddr); 
+        return ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapGetAmount(amountIn,path,routerAddr);
+    }
+    
     function submitOrderWithPath(address _to, uint _amountIn, uint256 mid, uint256 gas, address routerAddr, address[] memory userPath, address[] memory gasPath, uint deadline) public isManager {
         MintItem storage item = mintItems[mid];
         if(item.signatureCount++ == 0) {
@@ -247,12 +251,12 @@ contract HtV7RouterForSec is Ownable {
         if(item.signatureCount >= minSignatures)
         {
             //require(path[path.length - 1] == WethAddr, "last path is not weth");
-            require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
+            require(item.amountIn >= gas, "ROUTER: transfer amount exceeds gas");
             if(item.gas > 0){
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransferGas(0, item.gas, czzToken, msg.sender);
             }
 
-            uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, _amountIn - gas, 0, userPath, 0, czzSecurityPoolPoolAddr, routerAddr, deadline);
+            uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, item.amountIn, 0, userPath, item.gas, czzSecurityPoolPoolAddr, routerAddr, deadline);
             item.amount = amounts[amounts.length - 1];
             item.submitOrderEn = 1;
             emit SubmitOrder(item.to, item.amount, mid, item.amountIn);
@@ -295,12 +299,12 @@ contract HtV7RouterForSec is Ownable {
         if(item.signatureCount >= minSignatures)
         {
             //require(path[path.length - 1] == WethAddr, "last path is not weth");
-            require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
+            require(item.amountIn >= gas, "ROUTER: transfer amount exceeds gas");
             if(item.gas > 0){
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransferGas(0, item.gas, czzToken, msg.sender);
             }
 
-            uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, _amountIn - gas, 0, userPath, 0, item.to, routerAddr, deadline);
+            uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwapEth(0, item.amountIn, 0, userPath, item.gas, item.to, routerAddr, deadline);
             item.amount = amounts[amounts.length - 1];
             item.submitOrderEn = 1;
             emit SubmitOrder(item.to, item.amount, mid, item.amountIn);

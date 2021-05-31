@@ -236,6 +236,13 @@ contract securityPool is Ownable {
         assert(msg.sender == WETH); // only accept ETH via fallback from the WETH contract
     }
     
+    event MintToken(
+        address indexed to,
+        uint256 amount,
+        uint256 mid,
+        uint256 amountIn
+    );
+    
     function addManager(address manager) public onlyOwner{
         managers[manager] = 1;
     }
@@ -491,20 +498,17 @@ contract securityPool is Ownable {
         PoolInfo storage pool = poolInfo[_pid];
         //Calculation of reward !!!
         uint _amountIn = 0;
-        if(gas == 0) {
-            uint256  _reward = amountIn.mul(allocPoint).div(allocPointDecimals);
-            require(_reward > 0, "amountIn: volumes are too small");
-            _amountIn = amountIn.sub(_reward);
-            //Calculation of reward!!
-            addReward(_pid,_reward);
-        }else{
-             _amountIn = amountIn;
-        }
+        uint256  _reward = amountIn.mul(allocPoint).div(allocPointDecimals);
+        require(_reward > 0, "amountIn: volumes are too small");
+        _amountIn = amountIn.sub(_reward + gas);
+        //Calculation of reward!!
+        addReward(_pid,_reward);
         uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
         if(_amount < amountIn) {
             approve(path[0], routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(_amountIn, amountOutMin,path,to,deadline);
+        emit MintToken(to, _amountIn-gas, 0,_amountIn);
         pool.usingAmount = pool.usingAmount.add(_amountIn);
         return amounts;
     }
@@ -520,22 +524,21 @@ contract securityPool is Ownable {
         uint deadline
         ) public isManager returns (uint[] memory amounts) {
         PoolInfo storage pool = poolInfo[_pid];
+        
         //Calculation of reward !!!
         uint _amountIn = 0;
-        if(gas == 0) {
-            uint256 _reward= amountIn.mul(allocPoint).div(allocPointDecimals) ;
-            require(_reward > 0, "amountIn: volumes are too small");
-             _amountIn = amountIn.sub(_reward);
-            //Calculation of reward!!
-            addReward(_pid,_reward);
-        }else{
-            _amountIn = amountIn;
-        }
+        uint256 _reward= amountIn.mul(allocPoint).div(allocPointDecimals) ;
+        require(_reward > 0, "amountIn: volumes are too small");
+         _amountIn = amountIn.sub(_reward+gas);
+        //Calculation of reward!!
+        addReward(_pid,_reward);
+
         uint256 _amount = IERC20(path[0]).allowance(address(this),routerAddr);
         if(_amount < amountIn) {
             approve(path[0], routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForETH(_amountIn, amountOutMin,path,to,deadline);
+        emit MintToken(to, _amountIn-gas, 0,_amountIn);
         pool.usingAmount = pool.usingAmount.add(_amountIn);
         return amounts;
     }
@@ -559,11 +562,11 @@ contract securityPool is Ownable {
         bool success = true;
         require(address(mdx) != _token, "token is pool token address");
         PoolInfo storage pool = poolInfo[_pid];
-        if(test == 0) {
-         (success) = ICzzSwap(_token).transfer(_to, _amount); 
-        }
-         require(success, 'securityPoolTransfer: TRANSFER_FAILED');
-         pool.usingAmount = pool.usingAmount.add(_amount);
+
+        (success) = ICzzSwap(_token).transfer(_to, _amount); 
+
+        require(success, 'securityPoolTransfer: TRANSFER_FAILED');
+        pool.usingAmount = pool.usingAmount.add(_amount);
     }
     
     function setPoolTonkenAddress(IMdx addr) public isManager {
