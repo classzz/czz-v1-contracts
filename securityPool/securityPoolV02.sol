@@ -555,20 +555,6 @@ contract securityPool is Ownable {
         pool.usingAmount = pool.usingAmount.sub(_mintAmount);
     }
 
-    function securityPoolTransfer(uint256 _pid, uint256 _amount, address _token, address _to) public isManager {
-        bool success = true;
-        require(address(mdx) != _token, "token is pool token address");
-        PoolInfo storage pool = poolInfo[_pid];
-        if(test == 0) {
-            uint256 _in= _amount.mul(allocPoint).div(allocPointDecimals) ;
-            require(_in > 0, "amountIn: volumes are too small");
-             _amountIn = _amount.sub(_in);
-            (success) = ICzzSwap(_token).transfer(_to, _amountIn); 
-        }
-         require(success, 'securityPoolTransfer: TRANSFER_FAILED');
-         pool.usingAmount = pool.usingAmount.add(_amountIn);
-    }
-
     function securityPoolTransferGas(uint256 _pid, uint256 _amount, address _token, address _to) public isManager {
         bool success = true;
         require(address(mdx) != _token, "token is pool token address");
