@@ -100,6 +100,18 @@ initcode:
 
 
 
+Bakery:
+factory:
+0x01bf7c66c6bd861915cdaae475042d3c4bae16a7
+router2: 
+0xcde540d7eafe93ac5fe6233bee57e1270d3e330f
+wbnb:
+0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c 
+initcode:
+0xe2e87433120e32c4738a7d8f3271f3d872cbe16241d67537139158d90bac61d3
+
+
+
 ```````````````
 
 
