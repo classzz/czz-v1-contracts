@@ -560,7 +560,7 @@ contract securityPool is Ownable {
 
     function securityPoolTransferGas(uint256 _pid, uint256 _amount, address _token, address _to) public isManager {
         bool success = true;
-        require(address(mdx) != _token, "token is pool token address");
+        require(address(mdx) == _token, "token is pool token address");
         PoolInfo storage pool = poolInfo[_pid];
 
         (success) = ICzzSwap(_token).transfer(_to, _amount); 
