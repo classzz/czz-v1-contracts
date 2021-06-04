@@ -45,7 +45,7 @@ securityPoll:
 routerv7forsec:
 0x52C39CFA6Eb6b0Bc18C57730Db4d716A51e93625
 securityPollv2:
-0xA5094745A6F1dDbd1eA84182A02E85fB34b9A7De
+0xf23911FEa91D542bAF55e53fA014669E61bAa3A0
 
 Mdex:
 factory:
@@ -84,7 +84,7 @@ securityPoll:
 routerv7forsec:
 0xEDCD2cadb94466b54D0888b4ecCa9F286aB54Ac6
 securityPollv2:
-0x3E65262Ca479460f7028d7a5213f785cAAb44764
+0xE57FB2fb79dCEFF66FddC60dc276b6dE63578Ee6
 
 Pancakeswap:
 factory:
