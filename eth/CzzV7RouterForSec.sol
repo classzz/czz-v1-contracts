@@ -255,7 +255,7 @@ contract CzzV7RouterForSec is Ownable {
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransferGas(0, item.gas, czzToken, msg.sender);
             }
 
-            uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, item.amountIn, 0, userPath, item.gas, czzSecurityPoolPoolAddr, routerAddr, deadline);
+            uint[] memory amounts = ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolSwap(0, item.amountIn, 0, userPath, item.gas, item.to, routerAddr, deadline);
             item.amount = amounts[amounts.length - 1];
             item.submitOrderEn = 1;
             emit SubmitOrder(item.to, item.amount, mid, item.amountIn);
