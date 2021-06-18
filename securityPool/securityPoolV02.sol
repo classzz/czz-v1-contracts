@@ -508,8 +508,8 @@ contract securityPool is Ownable {
             approve(path[0], routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForTokens(_amountIn, amountOutMin,path,to,deadline);
-        emit MintToken(to, _amountIn-gas, 0,_amountIn);
-        pool.usingAmount = pool.usingAmount.add(_amountIn);
+        emit MintToken(to, _amountIn, 0,amountIn);
+        pool.usingAmount = pool.usingAmount.add(_amountIn.add(_reward));
         return amounts;
     }
 
@@ -538,8 +538,8 @@ contract securityPool is Ownable {
             approve(path[0], routerAddr,uint256(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff));
         }
         amounts = IUniswapV2Router02(routerAddr).swapExactTokensForETH(_amountIn, amountOutMin,path,to,deadline);
-        emit MintToken(to, _amountIn-gas, 0,_amountIn);
-        pool.usingAmount = pool.usingAmount.add(_amountIn);
+        emit MintToken(to, _amountIn, 0,amountIn);
+        pool.usingAmount = pool.usingAmount.add(_amountIn.add(_reward));
         return amounts;
     }
 
