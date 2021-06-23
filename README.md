@@ -454,7 +454,7 @@ param:
 	
 	fromToken： token address  (HT:token-mdx   ETH:token-user)
 	
-	ntype：   0：eth   1: czz  2: ht
+	ntype：   0：czz   1: eth  2: heco  3: bsc
 	
 	
 	toToken:  The address of the token contract to be transferred to
@@ -479,7 +479,7 @@ param:
 	
 	_amountInMin： The minimum amount of tokens to be transferred
 	
-	ntype：   0：eth   1: czz  2: ht
+	ntype：   0：czz   1: eth  2: heco  3: bsc
 	
 	
 	toToken:  The address of the token contract to be transferred to
