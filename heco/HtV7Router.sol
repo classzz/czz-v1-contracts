@@ -1,3 +1,4 @@
+
 pragma solidity =0.6.6;
 
 import './IERC20.sol';
@@ -66,6 +67,8 @@ contract Ownable is Context {
         _owner = newOwner;
     }
 }
+
+
 
 interface IWETH {
     function deposit() external payable;
@@ -314,13 +317,12 @@ contract HtV7Router is Ownable {
         return IUniswapV2Router02(routerAddr).getAmountsOut(amountOut,path);
     }
     
-    function swapTokenWithPath(address _to, uint _amountIn, uint _amountInMin, uint256 mid, uint256 gas, uint256 _gasMin, address routerAddr, address[] memory userPath, address[] memory gasPath, uint deadline) payable public isManager {
+    function swapTokenWithPath(address _to, uint _amountIn, uint _amountInMin, uint256 mid, uint256 gas, address routerAddr, address[] memory userPath, uint deadline) payable public isManager {
         require(address(0) != _to);
         require(address(0) != routerAddr); 
         //require(address(0) != WethAddr); 
         require(_amountIn > 0);
         require(userPath[0] == czzToken, "userPath 0 is not czz");
-        require(gasPath[0] == czzToken, "gasPath 0 is not czz");
         //require(address(this).balance >= _amountIn);
         
         MintItem storage item = mintItems[mid];
@@ -336,11 +338,14 @@ contract HtV7Router is Ownable {
             if(getItem(mid) != 0){
                 return;
             }
-            require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
+            require(_amountIn > gas, "ROUTER: transfer amount exceeds gas");
             ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, userPath, routerAddr);
             if(gas > 0){
-                 _swapEthMint(gas, _gasMin, gasPath, msg.sender, routerAddr, deadline);
+                bool success = true;
+                 //_swapEthMint(gas, _gasMin, gasPath, msg.sender, routerAddr, deadline);
+                (success) = ICzzSwap(czzToken).transfer(msg.sender, gas); 
+                require(success, 'swapTokenWithPath gas Transfer error');
             }
             _swapMint(_amountIn-gas, _amountInMin, userPath, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
@@ -354,7 +359,7 @@ contract HtV7Router is Ownable {
     }
     
     
-    function swapTokenForEthWithPath(address _to, uint _amountIn, uint _amountInMin, uint256 mid, uint256 gas, uint256 _gasMin, address routerAddr, address[] memory path, uint deadline) payable public isManager {
+    function swapTokenForEthWithPath(address _to, uint _amountIn, uint _amountInMin, uint256 mid, uint256 gas, address routerAddr, address[] memory path, uint deadline) payable public isManager {
         require(address(0) != _to);
         require(address(0) != routerAddr); 
         require(_amountIn > 0);
@@ -373,11 +378,14 @@ contract HtV7Router is Ownable {
             if(getItem(mid) != 0){
                 return;
             }
-            require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
+            require(_amountIn > gas, "ROUTER: transfer amount exceeds gas");
             ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
             uint[] memory amounts = swap_mint_get_amount(_amountIn, path, routerAddr);
             if(gas > 0){
-                _swapEthMint(gas, _gasMin, path, msg.sender, routerAddr, deadline);
+                bool success = true;
+                //_swapEthMint(gas, _gasMin, path, msg.sender, routerAddr, deadline);
+                (success) = ICzzSwap(czzToken).transfer(msg.sender, gas); 
+                require(success, 'swapTokenForEthWithPath gas Transfer error');
             }
             _swapEthMint(_amountIn-gas, _amountInMin, path, _to, routerAddr, deadline);
             emit MintToken(_to, amounts[amounts.length - 1],mid,_amountIn);
@@ -441,11 +449,10 @@ contract HtV7Router is Ownable {
         emit BurnToken(msg.sender, _amountIn, ntype, toToken);
     }
     
-    function mintWithGas(uint256 mid, address _to, uint256 _amountIn, uint256 gas, uint256 _gasMin, address routerAddr, address[] memory gasPath, uint256 deadline)  payable public isManager 
+    function mintWithGas(uint256 mid, address _to, uint256 _amountIn, uint256 gas, address routerAddr)  payable public isManager 
     {
         require(address(0) != routerAddr); 
         require(_amountIn > 0);
-        require(gasPath[0] == czzToken, "userPath 0 is not czz");
         require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
 
         MintItem storage item = mintItems[mid];
@@ -461,12 +468,16 @@ contract HtV7Router is Ownable {
             if(getItem(mid) != 0){
                 return;
             }
-            require(_amountIn >= gas, "ROUTER: transfer amount exceeds gas");
-            ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address   
+            ICzzSwap(czzToken).mint(address(this), _amountIn);    // mint to contract address
+            bool success = true;   
             if(gas > 0){
-                 _swapEthMint(gas, _gasMin, gasPath, msg.sender, routerAddr, deadline);
+                 
+                //_swapEthMint(gas, _gasMin, path, msg.sender, routerAddr, deadline);
+                (success) = ICzzSwap(czzToken).transfer(msg.sender, gas); 
+                require(success, 'mintWithGas gas Transfer error');
             }
-            ICzzSwap(czzToken).transfer(_to, _amountIn-gas);
+            (success) = ICzzSwap(czzToken).transfer(_to, _amountIn-gas);
+            require(success, 'mintWithGas amountIn Transfer error');
             emit MintToken(_to, _amountIn-gas, mid,_amountIn);
             remove_signature_all(item);
             deleteItems(mid);

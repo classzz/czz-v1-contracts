@@ -225,9 +225,9 @@ contract BscV8RouterForSec is Ownable {
         MintItem storage item = mintItems[mid];
         if(item.signatureCount++ == 0) {
             require(getItem(mid) == 1, "Order exist");
-            require(address(0) != _to , "address(0) != _to");
-            require(address(0) != routerAddr , "address(0) != routerAddr"); 
-            require(address(0) != czzSecurityPoolPoolAddr , "address(0) != czzSecurityPoolPoolAddr"); 
+            require(address(0) != _to , "address(0) == _to");
+            require(address(0) != routerAddr , "address(0) == routerAddr"); 
+            require(address(0) != czzSecurityPoolPoolAddr , "address(0) == czzSecurityPoolPoolAddr"); 
             require(userPath[0] == czzToken, "path 0 is not czz");
             require(_amountIn > 0);
             item.to = _to;
@@ -239,18 +239,18 @@ contract BscV8RouterForSec is Ownable {
             item.toToken = userPath[userPath.length - 1];
         }else{
             require(getItem(mid) == 0, "Order do not exist");
-            require(item.to != _to , "item.to != _to");
-            require(item.routerAddr != routerAddr , "address(0) != routerAddr"); 
-            require(address(0) != czzSecurityPoolPoolAddr , "address(0) != czzSecurityPoolPoolAddr"); 
+            require(item.to == _to , "item.to != _to");
+            require(item.routerAddr == routerAddr , "routerAddr diff"); 
+            require(address(0) != czzSecurityPoolPoolAddr , "address(0) == czzSecurityPoolPoolAddr"); 
             require(userPath[0] == czzToken, "path 0 is not czz");
-            require(item.amountIn != _amountIn, "item.amountIn != _amountIn");
-            require(item.gas != gas, "item.gas != gas");
+            require(item.amountIn == _amountIn, "item.amountIn != _amountIn");
+            require(item.gas == gas, "item.gas != gas");
         }
         
         if(item.signatureCount >= minSignatures)
         {
             //require(path[path.length - 1] == WethAddr, "last path is not weth");
-            require(item.amountIn >= gas, "ROUTER: transfer amount exceeds gas");
+            require(item.amountIn > gas, "ROUTER: transfer amount exceeds gas");
             if(item.gas > 0){
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransferGas(0, item.gas, czzToken, msg.sender);
             }
@@ -273,9 +273,9 @@ contract BscV8RouterForSec is Ownable {
         MintItem storage item = mintItems[mid];
         if(item.signatureCount++ == 0) {
             require(getItem(mid) == 1, "Order exist");
-            require(address(0) != _to , "address(0) != _to");
-            require(address(0) != routerAddr , "address(0) != routerAddr"); 
-            require(address(0) != czzSecurityPoolPoolAddr , "address(0) != czzSecurityPoolPoolAddr"); 
+            require(address(0) != _to , "address(0) == _to");
+            require(address(0) != routerAddr , "address(0) == routerAddr"); 
+            require(address(0) != czzSecurityPoolPoolAddr , "address(0) == czzSecurityPoolPoolAddr"); 
             require(userPath[0] == czzToken, "path 0 is not czz");
             require(_amountIn > 0);
             item.to = _to;
@@ -287,18 +287,18 @@ contract BscV8RouterForSec is Ownable {
             item.toToken = userPath[userPath.length - 1];
         }else{
             require(getItem(mid) == 0, "Order do not exist");
-            require(item.to != _to , "item.to != _to");
-            require(item.routerAddr != routerAddr , "address(0) != routerAddr"); 
-            require(address(0) != czzSecurityPoolPoolAddr , "address(0) != czzSecurityPoolPoolAddr"); 
+            require(item.to == _to , "item.to != _to");
+            require(item.routerAddr == routerAddr , "address(0) != routerAddr"); 
+            require(address(0) != czzSecurityPoolPoolAddr , "address(0) == czzSecurityPoolPoolAddr"); 
             require(userPath[0] == czzToken, "path 0 is not czz");
-            require(item.amountIn != _amountIn, "item.amountIn != _amountIn");
-            require(item.gas != gas, "item.gas != gas");
+            require(item.amountIn == _amountIn, "item.amountIn != _amountIn");
+            require(item.gas == gas, "item.gas != gas");
         }
         
         if(item.signatureCount >= minSignatures)
         {
             //require(path[path.length - 1] == WethAddr, "last path is not weth");
-            require(item.amountIn >= gas, "ROUTER: transfer amount exceeds gas");
+            require(item.amountIn > gas, "ROUTER: transfer amount exceeds gas");
             if(item.gas > 0){
                 ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolTransferGas(0, item.gas, czzToken, msg.sender);
             }
@@ -317,7 +317,7 @@ contract BscV8RouterForSec is Ownable {
     }
 
     function mintAndRepayment(uint amount) public isManager {
-        require(address(0) != czzSecurityPoolPoolAddr , "address(0) != czzSecurityPoolPoolAddr"); 
+        require(address(0) != czzSecurityPoolPoolAddr , "address(0) == czzSecurityPoolPoolAddr"); 
         ICzzSecurityPoolSwapPool(czzSecurityPoolPoolAddr).securityPoolMint(0, amount, czzToken);    // mint to contract address        
         emit MintToken(czzSecurityPoolPoolAddr, amount, 0, amount);  
     }   
