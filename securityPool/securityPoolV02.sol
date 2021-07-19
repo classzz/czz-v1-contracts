@@ -341,17 +341,19 @@ contract securityPool is Ownable {
             uint256 mdxReward = pool.totalPendingReward;
             if (mdxReward != 0) {
                 accMdxPerShare = accMdxPerShare.add(mdxReward.mul(1e12).div(lpSupply));
-                uint256 pendingAmount = user.amount.mul(accMdxPerShare).div(1e12).sub(user.rewardDebt);
-                uint256 lossAmount = user.lossAmount.add(pool.lossAmount.mul(user.amount).div(pool.totalAmount));
-                if (pendingAmount > 0) {
-                    if(lossAmount < pendingAmount){
-                        return pendingAmount - lossAmount;
-                    }else{
-                        return 0;
-                    }
-                }
-                //return user.amount.mul(accMdxPerShare).div(1e12).sub(user.rewardDebt);
+                
             }
+            uint256 pendingAmount = user.amount.mul(accMdxPerShare).div(1e12).sub(user.rewardDebt);
+            uint256 lossAmount = user.lossAmount.add(pool.lossAmount.mul(user.amount).div(pool.totalAmount));
+            if (pendingAmount > 0) {
+                if(lossAmount < pendingAmount){
+                    return pendingAmount - lossAmount;
+                }else{
+                    return 0;
+                }
+            }
+            //return user.amount.mul(accMdxPerShare).div(1e12).sub(user.rewardDebt);
+            
             
         }
                 
